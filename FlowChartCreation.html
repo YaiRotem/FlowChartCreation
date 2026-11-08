@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark">
 <title>FlowChartCreation</title>
-<!-- FlowChartCreation v2.0.0 — single-file, fully offline build.
+<!-- FlowChartCreation v2.2.0 — single-file, fully offline build.
      Bundled: Mermaid 10.9.3 (MIT), jsPDF 2.5.2 (MIT). No network access needed. -->
 <style>
 :root{
@@ -68,13 +68,38 @@ main{flex:1;display:flex;min-height:0}
 #previewPanel{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
 .bar{height:42px;flex:none;display:flex;align-items:center;gap:6px;padding:0 10px;border-bottom:1px solid var(--line);background:var(--panel2);overflow-x:auto;overflow-y:hidden}
 .bar .ttl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px;margin-inline-end:4px;white-space:nowrap}
-.editor-wrap{flex:1;position:relative;min-height:0;display:flex}
+.editor-wrap{flex:1;position:relative;min-height:150px;display:flex}
 #gutter{width:42px;flex:none;padding:12px 6px 12px 0;text-align:right;font:12px/1.6 var(--mono);color:var(--dim);background:var(--panel2);overflow:hidden;user-select:none;border-inline-end:1px solid var(--line);direction:ltr}
 #gutter div.errline{color:#fff;background:var(--err);border-radius:3px}
+#gutter div.warnline{color:#111;background:var(--warn);border-radius:3px}
 #codeEditor{flex:1;resize:none;border:0;outline:0;background:#0a0f1d;color:#e2e8f0;padding:12px 14px;font:12.5px/1.6 var(--mono);white-space:pre;overflow:auto;tab-size:4;direction:ltr;unicode-bidi:plaintext}
 #codeEditor[readonly]{color:#cbd5e1;background:#0c1222}
-#errorPanel{flex:none;display:flex;gap:8px;align-items:flex-start;padding:8px 12px;background:rgba(244,63,94,.12);border-top:1px solid rgba(244,63,94,.4);color:#fecdd3;font:11.5px/1.5 var(--mono);max-height:110px;overflow:auto}
-#errorPanel .msg{flex:1;white-space:pre-wrap;unicode-bidi:plaintext}
+#errorPanel{flex:none;display:flex;flex-direction:column;gap:2px;padding:6px 8px;border-top:1px solid var(--line);background:var(--panel2);max-height:140px;overflow:auto}
+.iss{display:flex;gap:8px;align-items:flex-start;padding:5px 8px;border-radius:6px;font-size:12px;line-height:1.45;cursor:pointer;border:0;background:transparent;text-align:start;width:100%}
+.iss:hover{background:var(--panel3)}
+.iss svg.i{margin-top:1px}
+.iss span{flex:1;unicode-bidi:plaintext;white-space:pre-wrap}
+.iss.error{color:#fecdd3}.iss.error svg{color:var(--err)}
+.iss.warn{color:#fde68a}.iss.warn svg{color:var(--warn)}
+.iss.info{color:var(--muted)}
+.iss.mono span{font-family:var(--mono);font-size:11.5px}
+.toolrow{flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:6px 8px;border-bottom:1px solid var(--line);background:var(--panel)}
+.toolrow .btn{height:28px;padding:0 9px}
+.toolrow .btn b{font-weight:700;color:var(--accent-h)}
+.toolrow select{height:28px}
+.sidepanel{flex:none;border-top:1px solid var(--line);background:var(--panel2);display:flex;flex-direction:column;max-height:38%;min-height:0}
+.sidepanel .sph{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--line);font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+.sidepanel .spb{overflow:auto;padding:10px 12px;font-size:12px;color:var(--muted)}
+.sidepanel pre.code{margin:0;color:#c7d2fe;white-space:pre}
+.guide{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;align-items:baseline}
+.guide code{font-family:var(--mono);color:#a7f3d0;background:#0a0f1d;padding:1px 6px;border-radius:4px;white-space:pre;unicode-bidi:plaintext}
+.modebadge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:rgba(245,158,11,.15);color:#fcd34d;border:1px solid rgba(245,158,11,.4);white-space:nowrap}
+body.simple #diagramOutput g.node{cursor:pointer}
+body:not(.simple) .simple-only{display:none!important}
+body.simple .mermaid-only{display:none!important}
+.pick{display:flex;flex-direction:column;gap:4px;max-height:50vh;overflow:auto}
+.pick button{text-align:start;padding:8px 10px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);unicode-bidi:plaintext}
+.pick button:hover{border-color:var(--accent);background:var(--accent-soft)}
 .foot{height:34px;flex:none;display:flex;align-items:center;gap:6px;padding:0 10px;border-top:1px solid var(--line);background:var(--panel2);font-size:11px;color:var(--dim)}
 
 #canvasViewport{flex:1;overflow:hidden;position:relative;cursor:grab;min-height:0;direction:ltr;touch-action:none;user-select:none;-webkit-user-select:none;outline:none}
@@ -235,19 +260,43 @@ body.review .edit-only{display:none!important}
 <main>
   <section id="editorPanel">
     <div class="bar">
-      <span class="ttl"><svg class="i"><use href="#i-code"/></svg><span data-i18n="code"></span></span>
+      <span class="ttl"><svg class="i"><use href="#i-edit"/></svg><span class="simple-only" data-i18n="wfTitle"></span><span class="mermaid-only" data-i18n="code"></span></span>
+      <span class="modebadge mermaid-only" data-i18n="advancedBadge"></span>
       <select id="presetSelect" class="edit-only" style="flex:1;min-width:120px" onchange="App.loadPreset(this.value);this.value=''"></select>
       <label class="chk edit-only"><input type="checkbox" id="autoRenderToggle" checked onchange="App.setAutoRender(this.checked)"><span data-i18n="autoRender"></span></label>
       <button class="btn primary sm" onclick="Render.run()" data-i18n-title="renderHint"><svg class="i"><use href="#i-play"/></svg><span data-i18n="render"></span></button>
+      <button class="btn sm icon simple-only" id="mmdToggle" onclick="App.togglePanel('mmd')" data-i18n-title="showMermaid"><svg class="i"><use href="#i-code"/></svg></button>
+    </div>
+    <div class="toolrow simple-only edit-only" id="toolRow">
+      <button class="btn" onclick="Editor.insert('step')" data-i18n-title="insStepHint"><b>+</b><span data-i18n="insStep"></span></button>
+      <button class="btn" onclick="Editor.insert('question')" data-i18n-title="insQHint"><b>◇</b><span data-i18n="insQ"></span></button>
+      <button class="btn" onclick="Editor.insert('goto')" data-i18n-title="insGotoHint"><b>↩</b><span data-i18n="insGoto"></span></button>
+      <button class="btn" onclick="Editor.insert('data')" data-i18n-title="insDataHint"><b>⛁</b><span data-i18n="insData"></span></button>
+      <button class="btn" onclick="Editor.insert('end')" data-i18n-title="insEndHint"><b>■</b><span data-i18n="insEnd"></span></button>
+      <button class="btn" onclick="Editor.insert('group')" data-i18n-title="insGroupHint"><b>#</b><span data-i18n="insGroup"></span></button>
+      <div class="spacer"></div>
+      <select id="dirSelect" onchange="App.setDir(this.value)" data-i18n-title="dirHint"></select>
+      <button class="btn" id="guideToggle" onclick="App.togglePanel('guide')"><svg class="i"><use href="#i-help"/></svg><span data-i18n="guide"></span></button>
+    </div>
+    <div class="toolrow mermaid-only edit-only" id="advRow">
+      <span style="font-size:11.5px;color:var(--muted);flex:1" data-i18n="advancedNote"></span>
+      <button class="btn" id="backToSimple" onclick="App.toSimple()"><svg class="i"><use href="#i-edit"/></svg><span data-i18n="backToSimple"></span></button>
     </div>
     <div class="editor-wrap">
       <div id="gutter" aria-hidden="true"></div>
       <textarea id="codeEditor" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off"></textarea>
     </div>
-    <div id="errorPanel" class="hidden">
-      <svg class="i" style="color:var(--err);margin-top:2px"><use href="#i-warn"/></svg>
-      <div class="msg" id="errorMessage"></div>
-      <button class="btn sm hidden" id="errJump" onclick="Editor.jumpToLine(S.errLine)"></button>
+    <div id="errorPanel" class="hidden"></div>
+    <div class="sidepanel hidden simple-only" id="guidePanel">
+      <div class="sph"><svg class="i"><use href="#i-help"/></svg><span data-i18n="guideTitle" style="flex:1"></span><button class="btn ghost sm icon" onclick="App.togglePanel('guide')"><svg class="i"><use href="#i-x"/></svg></button></div>
+      <div class="spb" id="guideBody"></div>
+    </div>
+    <div class="sidepanel hidden simple-only" id="mmdPanel">
+      <div class="sph"><svg class="i"><use href="#i-code"/></svg><span data-i18n="mmdPanelTitle" style="flex:1"></span>
+        <button class="btn sm" onclick="App.copyMermaid()"><svg class="i"><use href="#i-copy"/></svg><span data-i18n="copy"></span></button>
+        <button class="btn sm edit-only" onclick="App.toAdvanced()"><svg class="i"><use href="#i-edit"/></svg><span data-i18n="editAsMermaid"></span></button>
+        <button class="btn ghost sm icon" onclick="App.togglePanel('mmd')"><svg class="i"><use href="#i-x"/></svg></button></div>
+      <div class="spb"><pre class="code" id="mmdOut"></pre></div>
     </div>
     <div class="foot">
       <button class="btn ghost sm" onclick="App.copyCode()"><svg class="i"><use href="#i-copy"/></svg><span data-i18n="copyCode"></span></button>
@@ -2325,6 +2374,219 @@ Expecting `+Ze.join(", ")+", got '"+(this.terminals_[Pe]||Pe)+"'":At="Parse erro
   }
 `;function BWe(i,s,u=!1){var R,F,j;const d=i;let p="default";(((R=d==null?void 0:d.classes)==null?void 0:R.length)||0)>0&&(p=((d==null?void 0:d.classes)||[]).join(" ")),p=p+" flowchart-label";let v=0,b="",y;switch(d.type){case"round":v=5,b="rect";break;case"composite":v=0,b="composite",y=0;break;case"square":b="rect";break;case"diamond":b="question";break;case"hexagon":b="hexagon";break;case"block_arrow":b="block_arrow";break;case"odd":b="rect_left_inv_arrow";break;case"lean_right":b="lean_right";break;case"lean_left":b="lean_left";break;case"trapezoid":b="trapezoid";break;case"inv_trapezoid":b="inv_trapezoid";break;case"rect_left_inv_arrow":b="rect_left_inv_arrow";break;case"circle":b="circle";break;case"ellipse":b="ellipse";break;case"stadium":b="stadium";break;case"subroutine":b="subroutine";break;case"cylinder":b="cylinder";break;case"group":b="rect";break;case"doublecircle":b="doublecircle";break;default:b="rect"}const T=om((d==null?void 0:d.styles)||[]),_=d.label,A=d.size||{width:0,height:0,x:0,y:0};return{labelStyle:T.labelStyle,shape:b,labelText:_,rx:v,ry:v,class:p,style:T.style,id:d.id,directions:d.directions,width:A.width,height:A.height,x:A.x,y:A.y,positioned:u,intersect:void 0,type:d.type,padding:y??(((j=(F=Uh())==null?void 0:F.block)==null?void 0:j.padding)||0)}}async function Tcn(i,s,u){const d=BWe(s,u,!1);if(d.type==="group")return;const p=await nJ(i,d),v=p.node().getBBox(),b=u.getBlock(d.id);b.size={width:v.width,height:v.height,x:0,y:0,node:p},u.setBlock(b),p.remove()}async function Ccn(i,s,u){const d=BWe(s,u,!0);u.getBlock(d.id).type!=="space"&&(await nJ(i,d),s.intersect=d==null?void 0:d.intersect,zme(d))}async function gwe(i,s,u,d){for(const p of s)await d(i,p,u),p.children&&await gwe(i,p.children,u,d)}async function Scn(i,s,u){await gwe(i,s,u,Tcn)}async function _cn(i,s,u){await gwe(i,s,u,Ccn)}async function Acn(i,s,u,d,p){const v=new P0({multigraph:!0,compound:!0});v.setGraph({rankdir:"TB",nodesep:10,ranksep:10,marginx:8,marginy:8});for(const b of u)b.size&&v.setNode(b.id,{width:b.size.width,height:b.size.height,intersect:b.intersect});for(const b of s)if(b.start&&b.end){const y=d.getBlock(b.start),T=d.getBlock(b.end);if(y!=null&&y.size&&(T!=null&&T.size)){const _=y.size,A=T.size,P=[{x:_.x,y:_.y},{x:_.x+(A.x-_.x)/2,y:_.y+(A.y-_.y)/2},{x:A.x,y:A.y}];await NUe(i,{v:b.start,w:b.end,name:b.id},{...b,arrowTypeEnd:b.arrowTypeEnd,arrowTypeStart:b.arrowTypeStart,points:P,classes:"edge-thickness-normal edge-pattern-solid flowchart-link LS-a1 LE-b1"},void 0,"block",v,p),b.label&&(await qme(i,{...b,label:b.label,labelStyle:"stroke: #333; stroke-width: 1.5px;fill:none;",arrowTypeEnd:b.arrowTypeEnd,arrowTypeStart:b.arrowTypeStart,points:P,classes:"edge-thickness-normal edge-pattern-solid flowchart-link LS-a1 LE-b1"}),await IUe({...b,x:P[1].x,y:P[1].y},{originalPath:P}))}}}const Zf=(($We=(jWe=qt())==null?void 0:jWe.block)==null?void 0:$We.padding)||8;function Lcn(i,s){if(i===0||!Number.isInteger(i))throw new Error("Columns must be an integer !== 0.");if(s<0||!Number.isInteger(s))throw new Error("Position must be a non-negative integer."+s);if(i<0)return{px:s,py:0};if(i===1)return{px:0,py:s};const u=s%i,d=Math.floor(s/i);return{px:u,py:d}}const Mcn=i=>{let s=0,u=0;for(const d of i.children){const{width:p,height:v,x:b,y}=d.size||{width:0,height:0,x:0,y:0};Xe.debug("getMaxChildSize abc95 child:",d.id,"width:",p,"height:",v,"x:",b,"y:",y,d.type),d.type!=="space"&&(p>s&&(s=p/(i.widthInColumns||1)),v>u&&(u=v))}return{width:s,height:u}};function pwe(i,s,u=0,d=0){var b,y,T,_,A,P,R,F,j,W,ee;Xe.debug("setBlockSizes abc95 (start)",i.id,(b=i==null?void 0:i.size)==null?void 0:b.x,"block width =",i==null?void 0:i.size,"sieblingWidth",u),(y=i==null?void 0:i.size)!=null&&y.width||(i.size={width:u,height:d,x:0,y:0});let p=0,v=0;if(((T=i.children)==null?void 0:T.length)>0){for(const de of i.children)pwe(de,s);const ie=Mcn(i);p=ie.width,v=ie.height,Xe.debug("setBlockSizes abc95 maxWidth of",i.id,":s children is ",p,v);for(const de of i.children)de.size&&(Xe.debug(`abc95 Setting size of children of ${i.id} id=${de.id} ${p} ${v} ${de.size}`),de.size.width=p*(de.widthInColumns||1)+Zf*((de.widthInColumns||1)-1),de.size.height=v,de.size.x=0,de.size.y=0,Xe.debug(`abc95 updating size of ${i.id} children child:${de.id} maxWidth:${p} maxHeight:${v}`));for(const de of i.children)pwe(de,s,p,v);const oe=i.columns||-1;let be=0;for(const de of i.children)be+=de.widthInColumns||1;let ge=i.children.length;oe>0&&oe<be&&(ge=oe),i.widthInColumns;const ae=Math.ceil(be/ge);let ne=ge*(p+Zf)+Zf,se=ae*(v+Zf)+Zf;if(ne<u){Xe.debug(`Detected to small siebling: abc95 ${i.id} sieblingWidth ${u} sieblingHeight ${d} width ${ne}`),ne=u,se=d;const de=(u-ge*Zf-Zf)/ge,X=(d-ae*Zf-Zf)/ae;Xe.debug("Size indata abc88",i.id,"childWidth",de,"maxWidth",p),Xe.debug("Size indata abc88",i.id,"childHeight",X,"maxHeight",v),Xe.debug("Size indata abc88 xSize",ge,"padding",Zf);for(const pe of i.children)pe.size&&(pe.size.width=de,pe.size.height=X,pe.size.x=0,pe.size.y=0)}if(Xe.debug(`abc95 (finale calc) ${i.id} xSize ${ge} ySize ${ae} columns ${oe}${i.children.length} width=${Math.max(ne,((_=i.size)==null?void 0:_.width)||0)}`),ne<(((A=i==null?void 0:i.size)==null?void 0:A.width)||0)){ne=((P=i==null?void 0:i.size)==null?void 0:P.width)||0;const de=oe>0?Math.min(i.children.length,oe):i.children.length;if(de>0){const X=(ne-de*Zf-Zf)/de;Xe.debug("abc95 (growing to fit) width",i.id,ne,(R=i.size)==null?void 0:R.width,X);for(const pe of i.children)pe.size&&(pe.size.width=X)}}i.size={width:ne,height:se,x:0,y:0}}Xe.debug("setBlockSizes abc94 (done)",i.id,(F=i==null?void 0:i.size)==null?void 0:F.x,(j=i==null?void 0:i.size)==null?void 0:j.width,(W=i==null?void 0:i.size)==null?void 0:W.y,(ee=i==null?void 0:i.size)==null?void 0:ee.height)}function FWe(i,s){var d,p,v,b,y,T,_,A,P,R,F,j,W,ee,ie,oe,be;Xe.debug(`abc85 layout blocks (=>layoutBlocks) ${i.id} x: ${(d=i==null?void 0:i.size)==null?void 0:d.x} y: ${(p=i==null?void 0:i.size)==null?void 0:p.y} width: ${(v=i==null?void 0:i.size)==null?void 0:v.width}`);const u=i.columns||-1;if(Xe.debug("layoutBlocks columns abc95",i.id,"=>",u,i),i.children&&i.children.length>0){const ge=((y=(b=i==null?void 0:i.children[0])==null?void 0:b.size)==null?void 0:y.width)||0,ae=i.children.length*ge+(i.children.length-1)*Zf;Xe.debug("widthOfChildren 88",ae,"posX");let ne=0;Xe.debug("abc91 block?.size?.x",i.id,(T=i==null?void 0:i.size)==null?void 0:T.x);let se=(_=i==null?void 0:i.size)!=null&&_.x?((A=i==null?void 0:i.size)==null?void 0:A.x)+(-((P=i==null?void 0:i.size)==null?void 0:P.width)/2||0):-Zf,de=0;for(const X of i.children){const pe=i;if(!X.size)continue;const{width:K,height:xe}=X.size,{px:U,py:Be}=Lcn(u,ne);if(Be!=de&&(de=Be,se=(R=i==null?void 0:i.size)!=null&&R.x?((F=i==null?void 0:i.size)==null?void 0:F.x)+(-((j=i==null?void 0:i.size)==null?void 0:j.width)/2||0):-Zf,Xe.debug("New row in layout for block",i.id," and child ",X.id,de)),Xe.debug(`abc89 layout blocks (child) id: ${X.id} Pos: ${ne} (px, py) ${U},${Be} (${(W=pe==null?void 0:pe.size)==null?void 0:W.x},${(ee=pe==null?void 0:pe.size)==null?void 0:ee.y}) parent: ${pe.id} width: ${K}${Zf}`),pe.size){const Ne=K/2;X.size.x=se+Zf+Ne,Xe.debug(`abc91 layout blocks (calc) px, pyid:${X.id} startingPos=X${se} new startingPosX${X.size.x} ${Ne} padding=${Zf} width=${K} halfWidth=${Ne} => x:${X.size.x} y:${X.size.y} ${X.widthInColumns} (width * (child?.w || 1)) / 2 ${K*((X==null?void 0:X.widthInColumns)||1)/2}`),se=X.size.x+Ne,X.size.y=pe.size.y-pe.size.height/2+Be*(xe+Zf)+xe/2+Zf,Xe.debug(`abc88 layout blocks (calc) px, pyid:${X.id}startingPosX${se}${Zf}${Ne}=>x:${X.size.x}y:${X.size.y}${X.widthInColumns}(width * (child?.w || 1)) / 2${K*((X==null?void 0:X.widthInColumns)||1)/2}`)}X.children&&FWe(X),ne+=(X==null?void 0:X.widthInColumns)||1,Xe.debug("abc88 columnsPos",X,ne)}}Xe.debug(`layout blocks (<==layoutBlocks) ${i.id} x: ${(ie=i==null?void 0:i.size)==null?void 0:ie.x} y: ${(oe=i==null?void 0:i.size)==null?void 0:oe.y} width: ${(be=i==null?void 0:i.size)==null?void 0:be.width}`)}function RWe(i,{minX:s,minY:u,maxX:d,maxY:p}={minX:0,minY:0,maxX:0,maxY:0}){if(i.size&&i.id!=="root"){const{x:v,y:b,width:y,height:T}=i.size;v-y/2<s&&(s=v-y/2),b-T/2<u&&(u=b-T/2),v+y/2>d&&(d=v+y/2),b+T/2>p&&(p=b+T/2)}if(i.children)for(const v of i.children)({minX:s,minY:u,maxX:d,maxY:p}=RWe(v,{minX:s,minY:u,maxX:d,maxY:p}));return{minX:s,minY:u,maxX:d,maxY:p}}function Dcn(i){const s=i.getBlock("root");if(!s)return;pwe(s,i,0,0),FWe(s),Xe.debug("getBlocks",JSON.stringify(s,null,2));const{minX:u,minY:d,maxX:p,maxY:v}=RWe(s),b=v-d,y=p-u;return{x:u,y:d,width:y,height:b}}const Icn=Object.freeze(Object.defineProperty({__proto__:null,diagram:{parser:hcn,db:kcn,renderer:{draw:async function(i,s,u,d){const{securityLevel:p,block:v}=Uh(),b=d.db;let y;p==="sandbox"&&(y=Ir("#i"+s));const T=Ir(p==="sandbox"?y.nodes()[0].contentDocument.body:"body"),_=p==="sandbox"?T.select(`[id="${s}"]`):Ir(`[id="${s}"]`);_me(_,["point","circle","cross"],d.type,s);const P=b.getBlocks(),R=b.getBlocksFlat(),F=b.getEdges(),j=_.insert("g").attr("class","block");await Scn(j,P,b);const W=Dcn(b);if(await _cn(j,P,b),await Acn(j,F,R,b,s),W){const ee=W,ie=Math.max(1,Math.round(.125*(ee.width/ee.height))),oe=ee.height+ie+10,be=ee.width+10,{useMaxWidth:ge}=v;Og(_,oe,be,!!ge),Xe.debug("Here Bounds",W,ee),_.attr("viewBox",`${ee.x-5} ${ee.y-5} ${ee.width+10} ${ee.height+10}`)}_F(qFe)},getClasses:function(i,s){return s.db.getClasses()}},styles:Ecn}},Symbol.toStringTag,{value:"Module"}));return um});
 </script>
+<script>/* =====================================================================
+   Simple workflow text  →  Mermaid flowchart
+   One step per line, top to bottom. Hebrew and English keywords both work.
+
+     Receive order                 plain line          = step (connected from the line above)
+     In stock?                     ends with "?"       = decision (also "if …" / "אם …")
+       Yes: Ship to WMS            indented "answer:"  = branch (answer becomes the arrow label)
+       No:
+         Create purchase order     deeper lines        = steps inside that branch
+         → Check stock             "→ / -> / go to"    = jump/loop back to an existing step
+     data: SQL Server              shape words         = data / input / sub / start / end
+     # Warehouse                   "#"                 = group (swim lane) until next "#"
+     // note                       "//"                = comment
+   Branches re-join at the next line with smaller indentation.
+   ===================================================================== */
+const Simple = (() => {
+  const KW = {
+    start: ['start', 'begin', 'התחלה'],
+    end: ['end', 'stop', 'finish', 'סוף', 'סיום'],
+    data: ['data', 'db', 'database', 'storage', 'נתונים', 'מסד', 'מסד נתונים', 'מאגר'],
+    io: ['input', 'output', 'io', 'קלט', 'פלט'],
+    sub: ['sub', 'subprocess', 'תת תהליך', 'תת-תהליך']
+  };
+  const KW_LOOKUP = new Map();
+  for (const [shape, words] of Object.entries(KW)) for (const w of words) KW_LOOKUP.set(w, shape);
+  const JUMP_RE = /^(?:→|->|=>|⟶|go\s*to\s+|goto\s+|back\s+to\s+|return\s+to\s+|jump\s+to\s+|חזור\s+ל-?|חזרה\s+ל-?|עבור\s+ל-?|מעבר\s+ל-?|לך\s+ל-?|חזרה\s+אל\s+|עבור\s+אל\s+)\s*(.+)$/i;
+  const IF_RE = /^(?:if|אם)\s+(.+)$/i;
+  const DIRS = ['TD', 'LR', 'RL', 'BT'];
+
+  const norm = (s) => String(s).toLowerCase().replace(/[‪-‮⁦-⁩]/g, '').replace(/["'״׳`]/g, '').replace(/\s+/g, ' ').trim();
+
+  /** Classify one line of text. */
+  function classify(raw) {
+    const text = raw.trim();
+    const j = text.match(JUMP_RE);
+    if (j) return { type: 'jump', target: j[1].trim() };
+    const kwAlone = KW_LOOKUP.get(norm(text).replace(/[.!:]$/, ''));
+    if (kwAlone === 'end') return { type: 'node', shape: 'end', text: text.replace(/^[a-z]/, c => c.toUpperCase()) };
+    const m = text.match(/^([^:]{1,24}):\s*(.*)$/);
+    if (m) {
+      const shape = KW_LOOKUP.get(norm(m[1]));
+      if (shape) {
+        const body = m[2].trim();
+        if (shape === 'end' && !body) return { type: 'node', shape: 'end', text: m[1].trim() };
+        if (body) return { type: 'node', shape, text: body, explicit: true };
+      }
+    }
+    const iff = text.match(IF_RE);
+    if (iff) return { type: 'decision', text: iff[1].trim().replace(/\?*$/, '?') };
+    if (/[?？]\s*$/.test(text)) return { type: 'decision', text };
+    return { type: 'node', shape: 'step', text };
+  }
+
+  /** Branch line under a decision: "Yes: …", "כן:", "Approved – …"? → only "label:" form. */
+  function branchLabel(text) {
+    const m = text.match(/^([^:]{1,40}):\s*(.*)$/);
+    if (!m) return null;
+    if (KW_LOOKUP.has(norm(m[1]))) return null; // "data: X" is a node, not an answer
+    if (JUMP_RE.test(text)) return null;
+    return { label: m[1].trim(), rest: m[2].trim() };
+  }
+
+  function similarity(a, b) { // Dice coefficient on bigrams
+    a = norm(a); b = norm(b); if (a === b) return 1; if (a.length < 2 || b.length < 2) return 0;
+    const bg = (s) => { const m = new Map(); for (let i = 0; i < s.length - 1; i++) { const k = s.slice(i, i + 2); m.set(k, (m.get(k) || 0) + 1); } return m; };
+    const A = bg(a), B = bg(b); let inter = 0;
+    for (const [k, v] of A) inter += Math.min(v, B.get(k) || 0);
+    return (2 * inter) / (a.length + b.length - 2);
+  }
+
+  /** Wrap long labels into lines of ~maxLen characters (word boundaries). */
+  function wrap(text, maxLen = 26) {
+    const words = text.split(/\s+/); const lines = []; let cur = '';
+    for (const w of words) {
+      if (cur && (cur + ' ' + w).length > maxLen) { lines.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w;
+    }
+    if (cur) lines.push(cur);
+    return lines;
+  }
+  const esc = (s) => String(s).replace(/#/g, '#35;').replace(/"/g, '#quot;').replace(/</g, '#lt;').replace(/>/g, '#gt;');
+  const label = (s, maxLen) => wrap(s, maxLen).map(esc).join('<br/>');
+
+  function compile(src, opts = {}) {
+    const dir = DIRS.includes(opts.dir) ? opts.dir : 'TD';
+    const wrapAt = opts.wrapAt || 26;
+    const issues = [];
+    const nodes = [], edges = [], jumps = [], groups = [];
+    let groupOfLine = null;
+
+    // ---- 1. tokenize ----
+    const lines = [];
+    String(src || '').replace(/\r\n?/g, '\n').split('\n').forEach((raw, i) => {
+      const no = i + 1;
+      const expanded = raw.replace(/\t/g, '    ');
+      const text = expanded.trim();
+      if (!text || text.startsWith('//')) return;
+      if (/^#/.test(text)) {
+        const name = text.replace(/^#+\s*/, '').trim();
+        if (name) { groupOfLine = { id: 'g' + (groups.length + 1), name, line: no }; groups.push(groupOfLine); }
+        else groupOfLine = null;
+        return;
+      }
+      lines.push({ no, indent: expanded.length - expanded.trimStart().length, text, group: groupOfLine });
+    });
+    if (!lines.length) return { ok: false, empty: true, code: '', issues: [{ level: 'info', code: 'empty', line: 0 }], nodes, edges };
+
+    // ---- 2. parse (indentation tree) ----
+    const childEnd = (i, to) => { let j = i + 1; while (j < to && lines[j].indent > lines[i].indent) j++; return j; };
+    function makeItems(text, L, cFrom, cTo) {
+      const c = classify(text);
+      if (c.type === 'decision') return [{ ...c, line: L.no, group: L.group, branches: parseBranches(cFrom, cTo, L) }];
+      const item = { ...c, line: L.no, group: L.group };
+      return cFrom < cTo ? [item, ...parseSeq(cFrom, cTo)] : [item];
+    }
+    function parseSeq(from, to) {
+      const out = []; let i = from;
+      while (i < to) { const j = childEnd(i, to); out.push(...makeItems(lines[i].text, lines[i], i + 1, j)); i = j; }
+      return out;
+    }
+    function parseBranches(from, to, decLine) {
+      const out = []; let i = from;
+      while (i < to) {
+        const L = lines[i], j = childEnd(i, to), b = branchLabel(L.text);
+        if (b) out.push({ label: b.label, line: L.no, items: b.rest ? makeItems(b.rest, L, i + 1, j) : parseSeq(i + 1, j) });
+        else {
+          const items = makeItems(L.text, L, i + 1, j), last = out[out.length - 1];
+          if (last && last.unlabeled) last.items.push(...items); else out.push({ label: '', unlabeled: true, line: L.no, items });
+        }
+        i = j;
+      }
+      if (!out.length) issues.push({ level: 'warn', code: 'noBranches', line: decLine.no, x: decLine.text });
+      return out;
+    }
+    const tree = parseSeq(0, lines.length);
+
+    // ---- 3. build graph ----
+    let nid = 0;
+    const addNode = (it, shape) => { const n = { id: 'n' + (++nid), text: it.text, shape, line: it.line, group: it.group }; nodes.push(n); return n; };
+    const connect = (entries, to) => entries.forEach(e => edges.push({ from: e.from, to, label: e.label || '' }));
+    function build(items, entries) {
+      for (const it of items) {
+        if (it.type === 'jump') { jumps.push({ entries: entries.slice(), target: it.target, line: it.line }); entries = []; continue; }
+        if (!entries.length && nodes.length && !it._first) {
+          // A step after a jump / end has no incoming arrow – allowed (separate path), but tell the user.
+          issues.push({ level: 'info', code: 'unreachable', line: it.line, x: it.text });
+        }
+        if (it.type === 'decision') {
+          const d = addNode(it, 'decision'); connect(entries, d.id);
+          const exits = [];
+          if (!it.branches.length) exits.push({ from: d.id });
+          for (const br of it.branches) {
+            if (!br.items.length) exits.push({ from: d.id, label: br.label });
+            else exits.push(...build(br.items, [{ from: d.id, label: br.label }]));
+          }
+          entries = exits; continue;
+        }
+        const n = addNode(it, it.shape); connect(entries, n.id);
+        entries = it.shape === 'end' ? [] : [{ from: n.id }];
+      }
+      return entries;
+    }
+    if (tree[0]) tree[0]._first = true;
+    build(tree, []);
+
+    // ---- 4. resolve jumps ----
+    for (const jmp of jumps) {
+      const t = norm(jmp.target).replace(/[?.!]$/, '');
+      const cands = nodes.map(n => ({ n, k: norm(n.text).replace(/[?.!]$/, '') }));
+      let hit = cands.find(c => c.k === t) || cands.find(c => c.k.startsWith(t) && t.length >= 3) || cands.find(c => c.k.includes(t) && t.length >= 4);
+      if (!hit) {
+        const best = cands.map(c => ({ c, s: similarity(c.k, t) })).sort((a, b) => b.s - a.s)[0];
+        issues.push({ level: 'error', code: 'jumpNotFound', line: jmp.line, x: jmp.target, s: best && best.s > 0.35 ? best.c.n.text : '' });
+        continue;
+      }
+      if (!jmp.entries.length) issues.push({ level: 'warn', code: 'jumpNoSource', line: jmp.line, x: jmp.target });
+      jmp.entries.forEach(e => edges.push({ from: e.from, to: hit.n.id, label: e.label || '', jump: true }));
+    }
+
+    // ---- 5. automatic start / end ovals ----
+    const outgoing = new Set(edges.map(e => e.from)), incoming = new Set(edges.map(e => e.to));
+    nodes.forEach((n, i) => {
+      if (n.shape !== 'step') return;
+      if (i === 0) n.shape = 'start';
+      else if (!outgoing.has(n.id)) n.shape = 'end';
+    });
+
+    // ---- 6. emit Mermaid ----
+    const SH = { step: ['[', ']'], start: ['([', '])'], end: ['([', '])'], decision: ['{', '}'], data: ['[(', ')]'], io: ['[/', '/]'], sub: ['[[', ']]'] };
+    const decl = (n) => { const [a, b] = SH[n.shape] || SH.step; return `${n.id}${a}"${label(n.text, n.shape === 'decision' ? Math.max(14, wrapAt - 6) : wrapAt)}"${b}`; };
+    const out = [`flowchart ${dir}`];
+    nodes.filter(n => !n.group).forEach(n => out.push('    ' + decl(n)));
+    for (const g of groups) {
+      const members = nodes.filter(n => n.group === g);
+      if (!members.length) continue;
+      out.push(`    subgraph ${g.id}["${esc(g.name)}"]`);
+      members.forEach(n => out.push('        ' + decl(n)));
+      out.push('    end');
+    }
+    for (const e of edges) out.push(`    ${e.from} ${e.jump ? '-.->' : '-->'}${e.label ? `|"${label(e.label, 18)}"|` : ''} ${e.to}`);
+    const cls = { start: [], end: [], decision: [] };
+    nodes.forEach(n => cls[n.shape] && cls[n.shape].push(n.id));
+    if (cls.start.length) out.push('    class ' + cls.start.join(',') + ' fcStart');
+    if (cls.end.length) out.push('    class ' + cls.end.join(',') + ' fcEnd');
+    out.push('    classDef fcStart stroke:#10b981,stroke-width:2px', '    classDef fcEnd stroke:#f43f5e,stroke-width:2px');
+
+    const lineOf = {}; nodes.forEach(n => { lineOf[n.id] = n.line; });
+    return { ok: !issues.some(i => i.level === 'error'), code: out.join('\n'), issues, nodes, edges, lineOf, stepNames: nodes.map(n => n.text) };
+  }
+
+  return { compile, classify, DIRS, KW, similarity };
+})();
+
+</script>
 <script>/** @license
  *
  * jsPDF - PDF Document creation from JavaScript
@@ -2731,7 +2993,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
    Sections: config · i18n · utils · storage · validation · editor ·
              render · view · export · files · network · review · UI · tests · app
    ===================================================================== */
-const APP_VERSION = '2.0.0';
+const APP_VERSION = '2.2.0';
 const LS_PREFIX = 'fcc.v2.';
 const LIMITS = { codeChars: 200000, nameChars: 80, projectBytes: 5e6, maxDim: 16000, maxArea: 120e6, history: 20, snapshotGapMs: 120000 };
 const THEMES = ['dark', 'default', 'forest', 'neutral'];
@@ -2745,9 +3007,29 @@ const ID_RE = /^[a-z0-9-]{1,64}$/;
 /* ----------------------------- i18n ----------------------------- */
 const I18N = {
  en: {
+  wfTitle:'Workflow', advancedBadge:'Advanced: Mermaid code', advancedNote:'You are editing the Mermaid code directly.', backToSimple:'Back to simple text',
+  showMermaid:'Show the generated Mermaid code (advanced)', mmdPanelTitle:'Generated Mermaid code (read-only)', editAsMermaid:'Edit as Mermaid…',
+  insStep:'Step', insQ:'Question', insGoto:'Go back to…', insData:'Data', insEnd:'End', insGroup:'Group',
+  insStepHint:'Add a step on the next line', insQHint:'Add a yes/no question with two answers', insGotoHint:'Loop back (or jump) to a step that already exists',
+  insDataHint:'Add a database / storage step', insEndHint:'End the flow here', insGroupHint:'Start a group (swim lane), e.g. a department',
+  dirHint:'Direction of the flow', dirTD:'↓ Top to bottom', dirLR:'→ Left to right', dirRL:'← Right to left', dirBT:'↑ Bottom to top',
+  guide:'Guide', guideTitle:'How to write a workflow',
+  snipStep:'New step', snipQ:'Question?\n  Yes: \n  No: ', snipQSel:'Question', snipEnd:'end: Done', snipEndSel:'Done', snipData:'data: Database', snipDataSel:'Database', snipGroup:'# Group name', snipGroupSel:'Group name',
+  gotoTitle:'Go back to which step?', gotoEmpty:'There are no steps yet – write a few steps first.',
+  needsFix:'Needs attention', exportIssues:'Fix the highlighted lines in the workflow text before exporting.',
+  iss_jumpNotFound:'Line {n}: there is no step called “{x}” to go back to.', iss_didYouMean:' Did you mean “{s}”?',
+  iss_noBranches:'Line {n}: the question “{x}” has no answers yet. Add indented lines such as “Yes: …” and “No: …”.',
+  iss_unreachable:'Line {n}: no arrow leads to “{x}” (it comes right after a “go to” or an end).',
+  iss_jumpNoSource:'Line {n}: nothing leads to this “go to”.', iss_internal:'The diagram could not be drawn: {e}',
+  toAdvTitle:'Edit the Mermaid code directly?', toAdvMsg:'You will edit the generated Mermaid code instead of the simple text. You can come back to the simple text later, but changes made in the Mermaid code will not carry over.',
+  toSimpleTitle:'Return to the simple text?', toSimpleMsg:'Changes you made in the Mermaid code will be replaced by your last simple text. The current code is kept in History.',
+  noSimpleSrc:'This diagram was created as Mermaid code, so there is no simple text to return to. Use “New” to start a workflow in simple text.',
+  tplSimple:'Workflow – simple text', tplAdvanced:'Advanced – Mermaid code', switchLabel:'Switch',
+  newStarterSimple:'Start\nFirst step\nIs everything OK?\n  Yes: Continue\n  No:\n    Fix the problem\n    → First step\nend: Done',
+  wfHelpTitle:'Workflow – simple text (recommended)', wfHelpIntro:'Write one step per line, in plain language. Lines are connected from top to bottom automatically.',
   appSub:'Interactive Diagram Studio', library:'Library', libraryHint:'Your saved diagrams (Ctrl+O)', newDoc:'New', newHint:'New diagram',
   share:'Share', tests:'Self-test', help:'Help & guide', langBtn:'עברית', renameHint:'Diagram name – click to rename',
-  code:'Diagram code', preset:'Insert template…', autoRender:'Auto-render', render:'Render', renderHint:'Render now (Ctrl+Enter)',
+  code:'Mermaid code', preset:'Templates…', autoRender:'Auto-render', render:'Render', renderHint:'Render now (Ctrl+Enter)',
   preview:'Preview', theme:'Diagram theme', canvas:'Background', export:'Export',
   thDark:'Theme: Dark', thDefault:'Theme: Default', thForest:'Theme: Forest', thNeutral:'Theme: Neutral',
   bgDark:'Background: Dark', bgLight:'Background: White', bgTransparent:'Background: Transparent',
@@ -2788,9 +3070,29 @@ const I18N = {
   unsavedLeave:'Changes could not be saved to browser storage. Leave anyway?'
  },
  he: {
+  wfTitle:'תהליך', advancedBadge:'מתקדם: קוד Mermaid', advancedNote:'אתם עורכים את קוד ה-Mermaid ישירות.', backToSimple:'חזרה לטקסט הפשוט',
+  showMermaid:'הצגת קוד ה-Mermaid שנוצר (מתקדם)', mmdPanelTitle:'קוד Mermaid שנוצר (לקריאה בלבד)', editAsMermaid:'עריכה כ-Mermaid…',
+  insStep:'שלב', insQ:'שאלה', insGoto:'חזרה אל…', insData:'נתונים', insEnd:'סיום', insGroup:'קבוצה',
+  insStepHint:'הוספת שלב בשורה הבאה', insQHint:'הוספת שאלת כן/לא עם שתי תשובות', insGotoHint:'חזרה (או קפיצה) לשלב שכבר קיים',
+  insDataHint:'הוספת שלב מסד נתונים / אחסון', insEndHint:'סיום התהליך כאן', insGroupHint:'פתיחת קבוצה (נתיב שחייה), למשל מחלקה',
+  dirHint:'כיוון הזרימה', dirTD:'↓ מלמעלה למטה', dirLR:'→ משמאל לימין', dirRL:'← מימין לשמאל', dirBT:'↑ מלמטה למעלה',
+  guide:'מדריך', guideTitle:'איך כותבים תהליך',
+  snipStep:'שלב חדש', snipQ:'שאלה?\n  כן: \n  לא: ', snipQSel:'שאלה', snipEnd:'סוף: הסתיים', snipEndSel:'הסתיים', snipData:'נתונים: מסד נתונים', snipDataSel:'מסד נתונים', snipGroup:'# שם הקבוצה', snipGroupSel:'שם הקבוצה',
+  gotoTitle:'לאיזה שלב לחזור?', gotoEmpty:'עדיין אין שלבים – כתבו קודם כמה שלבים.',
+  needsFix:'דורש תיקון', exportIssues:'תקנו את השורות המסומנות בטקסט התהליך לפני הייצוא.',
+  iss_jumpNotFound:'שורה {n}: אין שלב בשם „{x}” לחזור אליו.', iss_didYouMean:' אולי התכוונתם ל„{s}”?',
+  iss_noBranches:'שורה {n}: לשאלה „{x}” עדיין אין תשובות. הוסיפו שורות מוזחות כמו „כן: …” ו„לא: …”.',
+  iss_unreachable:'שורה {n}: אין חץ שמוביל אל „{x}” (הוא מופיע מיד אחרי „חזור ל” או סיום).',
+  iss_jumpNoSource:'שורה {n}: שום דבר לא מוביל ל„חזור ל” הזה.', iss_internal:'לא ניתן היה לצייר את התרשים: {e}',
+  toAdvTitle:'לערוך את קוד ה-Mermaid ישירות?', toAdvMsg:'תערכו את קוד ה-Mermaid שנוצר במקום הטקסט הפשוט. אפשר לחזור לטקסט הפשוט בהמשך, אבל שינויים שנעשו בקוד ה-Mermaid לא יעברו אליו.',
+  toSimpleTitle:'לחזור לטקסט הפשוט?', toSimpleMsg:'שינויים שעשיתם בקוד ה-Mermaid יוחלפו בטקסט הפשוט האחרון. הקוד הנוכחי נשמר בהיסטוריה.',
+  noSimpleSrc:'התרשים הזה נוצר כקוד Mermaid, ולכן אין טקסט פשוט לחזור אליו. לחצו „חדש” כדי להתחיל תהליך בטקסט פשוט.',
+  tplSimple:'תהליך – טקסט פשוט', tplAdvanced:'מתקדם – קוד Mermaid', switchLabel:'מעבר',
+  newStarterSimple:'התחלה\nשלב ראשון\nהכל תקין?\n  כן: המשך\n  לא:\n    תיקון הבעיה\n    חזור לשלב ראשון\nסוף: הסתיים',
+  wfHelpTitle:'תהליך – טקסט פשוט (מומלץ)', wfHelpIntro:'כותבים שלב אחד בכל שורה, בשפה רגילה. השורות מתחברות מלמעלה למטה אוטומטית.',
   appSub:'סטודיו לתרשימים אינטראקטיביים', library:'ספרייה', libraryHint:'התרשימים השמורים שלך (Ctrl+O)', newDoc:'חדש', newHint:'תרשים חדש',
   share:'שיתוף', tests:'בדיקה עצמית', help:'עזרה ומדריך', langBtn:'English', renameHint:'שם התרשים – לחצו כדי לשנות',
-  code:'קוד התרשים', preset:'הוספת תבנית…', autoRender:'רינדור אוטומטי', render:'הצג', renderHint:'הצג עכשיו (Ctrl+Enter)',
+  code:'קוד Mermaid', preset:'תבניות…', autoRender:'רינדור אוטומטי', render:'הצג', renderHint:'הצג עכשיו (Ctrl+Enter)',
   preview:'תצוגה מקדימה', theme:'ערכת עיצוב', canvas:'רקע', export:'ייצוא',
   thDark:'עיצוב: כהה', thDefault:'עיצוב: ברירת מחדל', thForest:'עיצוב: יער', thNeutral:'עיצוב: ניטרלי',
   bgDark:'רקע: כהה', bgLight:'רקע: לבן', bgTransparent:'רקע: שקוף',
@@ -2911,15 +3213,90 @@ const PRESETS = [
     ממשק משתמש :h3, after h2, 15d` }
 ];
 
+const WF_TEMPLATES = [
+ { key: 'wf_order_he', en: 'Order handling (Hebrew)', he: 'טיפול בהזמנה (עברית)', dir: 'TD', src: `קבלת הזמנה מלקוח
+בדיקת מלאי ב-ERP
+יש במלאי?
+  כן:
+    שליחה למחסן (WMS)
+    שליחת אישור ללקוח
+  לא:
+    הזמנת רכש מספק
+    המתנה לקבלת סחורה
+    חזור לבדיקת מלאי
+נתונים: עדכון SQL Server
+סוף: ההזמנה הושלמה` },
+ { key: 'wf_order_en', en: 'Order handling (English)', he: 'טיפול בהזמנה (אנגלית)', dir: 'TD', src: `Receive customer order
+Check stock in ERP
+In stock?
+  Yes:
+    Send to warehouse (WMS)
+    Email confirmation to customer
+  No:
+    Create purchase order
+    Wait for goods
+    → Check stock in ERP
+data: Update SQL Server
+end: Order completed` },
+ { key: 'wf_approval', en: 'Approval with loop (English)', he: 'אישור עם חזרה (אנגלית)', dir: 'TD', src: `Employee submits request
+Manager review
+Approved?
+  Yes:
+    Amount over 10,000?
+      Yes: CFO approval
+      No: Auto-approve
+  Needs changes:
+    Employee updates request
+    → Manager review
+  No: end: Request rejected
+Notify employee
+end: Done` },
+ { key: 'wf_lanes_he', en: 'Departments / swim lanes (Hebrew)', he: 'מחלקות / נתיבים (עברית)', dir: 'LR', src: `# מכירות
+פנייה מלקוח
+הכנת הצעת מחיר
+הלקוח אישר?
+  לא: סוף: העסקה בוטלה
+  כן: פתיחת הזמנה
+# מחסן
+ליקוט ואריזה
+משלוח ללקוח
+# כספים
+הפקת חשבונית
+נתונים: רישום בהנהלת חשבונות
+סוף: תהליך הושלם` }
+];
+
 /* ---------------------------- state ----------------------------- */
 const S = {
   lang: 'en', doc: null, autoRender: true, zoom: 1, natural: null, fitOnNextRender: true,
-  renderSeq: 0, lastRenderedCode: null, lastRenderOk: false, errLine: null,
+  renderSeq: 0, compiled: null, compiledShown: null, lineMarks: {}, lastRenderedCode: null, lastRenderOk: false, errLine: null,
   saveTimer: null, saveState: 'saved', storageOk: true, server: null, review: null,
-  settings: { lang: null, lastId: null, autoRender: true, exportScale: 3, pdfMode: 'fit', includeTitle: false, editorWidth: 42, author: '' }
+  settings: { lang: null, lastId: null, autoRender: true, showMermaid: false, showGuide: null, exportScale: 3, pdfMode: 'fit', includeTitle: false, editorWidth: 42, author: '' }
 };
 const $ = (id) => document.getElementById(id);
 const ed = () => $('codeEditor');
+
+/* ------------------------- document model ------------------------- */
+// A document is either 'simple' (src = workflow text; code = generated Mermaid) or 'mermaid' (code edited directly).
+const Model = {
+  isSimple(d) { return !!d && d.mode === 'simple'; },
+  editorText(d) { return this.isSimple(d) ? (d.src || '') : (d.code || ''); },
+  compile(d) { return Simple.compile(d.src || '', { dir: d.dir }); },
+  /** Pull the editor text into the current doc (and regenerate Mermaid in simple mode). */
+  sync() {
+    if (!S.doc || S.review) return;
+    const v = ed().value;
+    if (this.isSimple(S.doc)) { S.doc.src = v; S.compiled = this.compile(S.doc); S.doc.code = S.compiled.code; }
+    else { S.doc.code = v; S.compiled = null; }
+  },
+  normalize(d) {
+    d.mode = d.mode === 'simple' && typeof d.src === 'string' ? 'simple' : 'mermaid';
+    d.dir = Simple.DIRS.includes(d.dir) ? d.dir : 'TD';
+    if (d.mode === 'simple') d.code = Simple.compile(d.src, { dir: d.dir }).code;
+    return d;
+  },
+  typeLabel(d) { return this.isSimple(d) ? (S.lang === 'he' ? 'תהליך' : 'workflow') : Util.detectType(d.code); }
+};
 
 /* ---------------------------- utils ----------------------------- */
 const Util = {
@@ -2984,12 +3361,13 @@ const Docs = {
   save(doc) {
     const nv = Valid.name(doc.name); if (!nv.ok) throw new Error(nv.msg);
     const cv = Valid.code(doc.code); if (!cv.ok) throw new Error(cv.msg);
+    if (doc.src != null) { const sv = Valid.code(doc.src); if (!sv.ok) throw new Error(sv.msg); }
     doc.name = nv.value; doc.updated = Date.now(); doc.created = doc.created || doc.updated;
     Store.set('doc.' + doc.id, doc);
     const back = this.load(doc.id);
-    if (!back || back.code !== doc.code || back.name !== doc.name) throw new Error('Verification failed: stored data does not match');
+    if (!back || back.code !== doc.code || back.name !== doc.name || (back.src || '') !== (doc.src || '') || (back.mode || '') !== (doc.mode || '')) throw new Error('Verification failed: stored data does not match');
     const idx = this.index().filter(d => d.id !== doc.id);
-    idx.unshift({ id: doc.id, name: doc.name, updated: doc.updated, type: Util.detectType(doc.code), shared: !!doc.sharedId });
+    idx.unshift({ id: doc.id, name: doc.name, updated: doc.updated, type: Model.typeLabel(doc), shared: !!doc.sharedId });
     Store.set('index', idx);
     try { this.snapshot(doc, false); } catch { /* history is best-effort */ }
     return doc;
@@ -2998,9 +3376,9 @@ const Docs = {
   history(id) { const h = Store.get('hist.' + id, []); return Array.isArray(h) ? h : []; },
   snapshot(doc, force) {
     const h = this.history(doc.id), last = h[0];
-    if (last && last.code === doc.code) return;
+    if (last && last.code === doc.code && (last.src || '') === (doc.src || '') && (last.mode || 'mermaid') === (doc.mode || 'mermaid')) return;
     if (!force && last && Date.now() - last.t < LIMITS.snapshotGapMs) return;
-    h.unshift({ t: Date.now(), name: doc.name, code: doc.code });
+    h.unshift({ t: Date.now(), name: doc.name, code: doc.code, src: doc.src, mode: doc.mode, dir: doc.dir });
     let keep = h.slice(0, LIMITS.history);
     while (keep.length) { try { Store.set('hist.' + doc.id, keep); return; } catch (e) { if (!Store.isQuota(e)) throw e; keep = keep.slice(0, Math.floor(keep.length / 2)); } }
   },
@@ -3014,7 +3392,7 @@ const Docs = {
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
         if (k && k.startsWith(LS_PREFIX + 'doc.')) { const id = k.slice((LS_PREFIX + 'doc.').length);
-          if (!ids.has(id)) { const d = this.load(id); if (d) { clean.push({ id, name: d.name, updated: d.updated, type: Util.detectType(d.code), shared: !!d.sharedId }); fixed++; } } }
+          if (!ids.has(id)) { const d = this.load(id); if (d) { clean.push({ id, name: d.name, updated: d.updated, type: Model.typeLabel(d), shared: !!d.sharedId }); fixed++; } } }
       }
     } catch {}
     if (fixed) { clean.sort((a, b) => (b.updated || 0) - (a.updated || 0)); Store.set('index', clean); }
@@ -3047,7 +3425,9 @@ const Valid = {
     if (!trimmed.startsWith('{')) {
       if (!trimmed) return { ok: false, msg: t('errNoCode') };
       const cv = this.code(trimmed); if (!cv.ok) return cv;
-      return { ok: true, docs: [{ name: this.name(baseName).ok ? baseName.trim() : t('untitled'), code: trimmed, theme: 'dark', bg: 'dark' }] };
+      const nm = this.name(baseName).ok ? baseName.trim() : t('untitled');
+      if (Util.detectType(trimmed)) return { ok: true, docs: [{ name: nm, code: trimmed, theme: 'dark', bg: 'dark', mode: 'mermaid' }] };
+      return { ok: true, docs: [Model.normalize({ name: nm, src: trimmed, mode: 'simple', dir: 'TD', theme: 'dark', bg: 'dark' })] }; // plain text = workflow text
     }
     let o; try { o = JSON.parse(trimmed); } catch { return { ok: false, msg: t('errNotJson') }; }
     if (!o || typeof o !== 'object' || Array.isArray(o)) return { ok: false, msg: t('errSchema') };
@@ -3058,11 +3438,14 @@ const Valid = {
     else return { ok: false, msg: t('errSchema') };
     const docs = [];
     for (const d of raw) {
-      if (!d || typeof d.code !== 'string') continue;
-      const cv = this.code(d.code); if (!cv.ok) return cv;
+      if (!d) continue;
+      const simple = d.mode === 'simple' && typeof d.src === 'string';
+      if (!simple && typeof d.code !== 'string') continue;
+      const cv = this.code(simple ? d.src : d.code); if (!cv.ok) return cv;
       const nv = this.name(d.name);
-      docs.push({ name: nv.ok ? nv.value : Util.safeFileName(d.name || baseName).slice(0, LIMITS.nameChars) || t('untitled'),
-                  code: d.code, theme: this.theme(d.theme), bg: this.bg(d.bg), id: typeof d.id === 'string' && ID_RE.test(d.id) ? d.id : null });
+      docs.push(Model.normalize({ name: nv.ok ? nv.value : Util.safeFileName(d.name || baseName).slice(0, LIMITS.nameChars) || t('untitled'),
+                  code: simple ? '' : d.code, src: simple ? d.src : undefined, mode: simple ? 'simple' : 'mermaid', dir: d.dir,
+                  theme: this.theme(d.theme), bg: this.bg(d.bg), id: typeof d.id === 'string' && ID_RE.test(d.id) ? d.id : null }));
     }
     if (!docs.length) return { ok: false, msg: t('errNoCode') };
     return { ok: true, docs, isLibrary: o.kind === 'library' };
@@ -3076,6 +3459,15 @@ const Editor = {
     e.addEventListener('input', () => { this.updateMeta(); App.onCodeChanged(); });
     e.addEventListener('scroll', () => { $('gutter').scrollTop = e.scrollTop; });
     e.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter' && !ev.ctrlKey && !ev.metaKey && !ev.altKey && !ev.shiftKey && !e.readOnly && Model.isSimple(S.doc) && e.selectionStart === e.selectionEnd) {
+        // smart indentation: keep indent; go deeper after a question or an empty "answer:"; an empty indented line steps back out
+        const pos = e.selectionStart, ls = e.value.lastIndexOf('\n', pos - 1) + 1, before = e.value.slice(ls, pos);
+        const ind = before.length - before.trimStart().length, tx = before.trim();
+        ev.preventDefault();
+        if (!tx && ind > 0) { const ni = Math.max(0, ind - 2); e.setRangeText(' '.repeat(ni), ls, pos, 'end'); e.dispatchEvent(new Event('input')); return; }
+        const deeper = /[?？]$/.test(tx) || /^(if|אם)\s/i.test(tx) || /^[^:]{1,40}:$/.test(tx);
+        e.setRangeText('\n' + ' '.repeat(ind + (deeper ? 2 : 0)), pos, pos, 'end'); e.dispatchEvent(new Event('input')); return;
+      }
       if (ev.key === 'Tab' && !ev.ctrlKey && !ev.altKey && !e.readOnly) {
         ev.preventDefault();
         const s = e.selectionStart, en = e.selectionEnd;
@@ -3093,10 +3485,40 @@ const Editor = {
     const v = ed().value, n = v.split('\n').length;
     $('charCounter').textContent = `${n} ${t('lines')} · ${v.length.toLocaleString()} ${t('chars')}`;
     const g = $('gutter'); let html = '';
-    for (let i = 1; i <= n; i++) html += `<div${i === S.errLine ? ' class="errline"' : ''}>${i}</div>`;
+    const marks = S.lineMarks || {};
+    for (let i = 1; i <= n; i++) html += `<div${marks[i] ? ` class="${marks[i]}line"` : ''}>${i}</div>`;
     g.innerHTML = html; g.scrollTop = ed().scrollTop;
   },
   set(code) { ed().value = code; this.updateMeta(); },
+  /** Insert a snippet on a new line below the caret line, with the right indentation, and select its placeholder. */
+  async insert(kind) {
+    const e = ed(); if (e.readOnly) return;
+    let text, sel;
+    if (kind === 'goto') {
+      Model.sync();
+      const names = [...new Set((S.compiled && S.compiled.nodes || []).filter(x => x.shape !== 'end').map(x => x.text))];
+      if (!names.length) { UI.toast(t('gotoEmpty'), 'warn'); return; }
+      const pick = await UI.dialog({ title: t('gotoTitle'), html: `<div class="pick">${names.map((nm, i) => `<button data-pick="${i}">${Util.esc(nm)}</button>`).join('')}</div>`, buttons: [{ label: t('cancel'), value: null }],
+        onOpen: (w) => w.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => { w._pick = +b.dataset.pick; w.querySelector('[data-x]').click(); }) , returnPick: true });
+      const idx = UI._lastPick; UI._lastPick = null; if (idx == null) return;
+      text = (S.lang === 'he' ? 'חזור ל' : '→ ') + names[idx]; sel = null;
+    } else {
+      const map = { step: ['snipStep', 'snipStep'], question: ['snipQ', 'snipQSel'], end: ['snipEnd', 'snipEndSel'], data: ['snipData', 'snipDataSel'], group: ['snipGroup', 'snipGroupSel'] };
+      text = t(map[kind][0]); sel = t(map[kind][1]);
+    }
+    const v = e.value, pos = e.selectionEnd, ls = v.lastIndexOf('\n', pos - 1) + 1;
+    let le = v.indexOf('\n', pos); if (le < 0) le = v.length;
+    const line = v.slice(ls, le), tx = line.trim();
+    let ind = line.length - line.trimStart().length;
+    if (/[?？]$/.test(tx) || /^[^:]{1,40}:$/.test(tx)) ind += 2;
+    if (kind === 'group') ind = 0;
+    const block = text.split('\n').map(l => ' '.repeat(ind) + l).join('\n');
+    const insertAt = tx ? le : ls, prefix = tx ? '\n' : '', suffix = (!tx && le < v.length) ? '' : '';
+    e.setRangeText(prefix + block + suffix, insertAt, tx ? le : le, 'end');
+    const start = insertAt + prefix.length;
+    if (sel) { const k = block.indexOf(sel); if (k >= 0) e.setSelectionRange(start + k, start + k + sel.length); }
+    e.focus(); e.dispatchEvent(new Event('input'));
+  },
   jumpToLine(n) {
     if (!n) return; const e = ed(), lines = e.value.split('\n');
     let pos = 0; for (let i = 0; i < n - 1 && i < lines.length; i++) pos += lines[i].length + 1;
@@ -3171,40 +3593,57 @@ const Render = {
   schedule() { clearTimeout(this.timer); this.timer = setTimeout(() => this.run(), 350); },
   async run() {
     clearTimeout(this.timer);
-    const code = ed().value, out = $('diagramOutput');
-    if (!code.trim()) {
+    const out = $('diagramOutput');
+    Model.sync();
+    const simple = Model.isSimple(S.doc), comp = simple ? (S.review ? Model.compile(S.doc) : S.compiled) : null;
+    const code = S.doc.code || '';
+    App.updateMermaidPanel();
+    if (simple ? comp.empty : !code.trim()) {
       out.innerHTML = `<div class="empty">${Util.esc(t('emptyPreview'))}</div>`; out.classList.remove('stale'); out.classList.add('isEmpty'); out.style.transform = '';
-      S.lastRenderOk = false; S.lastRenderedCode = code; S.natural = null; this.setError(null); this.status('idle'); return;
+      S.lastRenderOk = false; S.lastRenderedCode = code; S.natural = null; S.compiledShown = comp; this.showIssues([]); this.status('idle'); return;
     }
-    const cv = Valid.code(code); if (!cv.ok) { this.setError(cv.msg); return; }
-    const mySeq = ++S.renderSeq; this.status('busy');
+    const cv = Valid.code(code); if (!cv.ok) { this.showIssues([{ level: 'error', msg: cv.msg }]); return; }
+    this.status('busy');
     try {
       const svg = await this.toSvg(code, S.doc.theme);
-      if (ed().value !== code) return; // superseded by newer edits
+      if ((S.doc.code || '') !== code) return; // superseded by newer edits
       out.innerHTML = svg; out.classList.remove('stale', 'isEmpty');
       const el = out.querySelector('svg'); S.natural = this.finalize(el);
-      S.lastRenderedCode = code; S.lastRenderOk = true; this.setError(null); this.status('ok');
+      S.compiledShown = comp; S.lastRenderedCode = code;
+      const issues = simple ? this.friendly(comp.issues) : [];
+      S.lastRenderOk = !issues.some(i => i.level === 'error');
+      this.showIssues(issues); this.status(S.lastRenderOk ? 'ok' : 'warn');
       if (S.fitOnNextRender) { S.fitOnNextRender = false; View.fit(); } else View.apply();
     } catch (err) {
-      if (ed().value !== code) return;
+      if ((S.doc.code || '') !== code) return;
       S.lastRenderOk = false; out.classList.add('stale');
-      this.setError(err); this.status('err');
+      this.showIssues([simple ? { level: 'error', msg: t('iss_internal', { e: String(err.str || err.message || err).split('\n')[0] }) } : this.mermaidIssue(err)]);
+      this.status('err');
     }
   },
-  setError(err) {
-    const p = $('errorPanel');
-    if (!err) { p.classList.add('hidden'); if (S.errLine) { S.errLine = null; Editor.updateMeta(); } return; }
-    let msg = typeof err === 'string' ? err : String(err.str || err.message || err);
-    msg = msg.replace(/^Error:\s*/, '').split('\n').slice(0, 4).join('\n');
+  /** Compiler issue codes → plain-language messages in the UI language. */
+  friendly(list) {
+    return (list || []).filter(i => i.code !== 'empty').map(i => ({ level: i.level, line: i.line,
+      msg: t('iss_' + i.code, { n: i.line, x: i.x || '' }) + (i.s ? t('iss_didYouMean', { s: i.s }) : '') }));
+  },
+  mermaidIssue(err) {
+    let msg = String((err && (err.str || err.message)) || err).replace(/^Error:\s*/, '').split('\n').slice(0, 4).join('\n');
     const m = msg.match(/line\s+(\d+)/i) || (err && err.hash && err.hash.line != null ? [0, err.hash.line + 1] : null);
-    S.errLine = m ? +m[1] : null;
-    $('errorMessage').textContent = msg;
-    const j = $('errJump'); if (S.errLine) { j.textContent = t('line', { n: S.errLine }); j.classList.remove('hidden'); } else j.classList.add('hidden');
+    return { level: 'error', line: m ? +m[1] : null, msg, mono: true };
+  },
+  setError(err) { this.showIssues(err ? [typeof err === 'string' ? { level: 'error', msg: err } : this.mermaidIssue(err)] : []); },
+  showIssues(list) {
+    const p = $('errorPanel'), shown = list.filter(i => i.level !== 'info' || list.length <= 3).slice(0, 6);
+    S.lineMarks = {}; list.forEach(i => { if (i.line && i.level !== 'info') S.lineMarks[i.line] = S.lineMarks[i.line] === 'err' ? 'err' : (i.level === 'error' ? 'err' : 'warn'); });
+    S.errLine = (list.find(i => i.line && i.level === 'error') || {}).line || null;
+    if (!shown.length) { p.classList.add('hidden'); p.innerHTML = ''; Editor.updateMeta(); return; }
+    p.innerHTML = shown.map((i, k) => `<button class="iss ${i.level}${i.mono ? ' mono' : ''}" data-line="${i.line || ''}"><svg class="i"><use href="#${i.level === 'info' ? 'i-help' : 'i-warn'}"/></svg><span>${Util.esc(i.msg)}</span></button>`).join('');
+    p.querySelectorAll('[data-line]').forEach(b => b.onclick = () => { const n = +b.dataset.line; if (n) Editor.jumpToLine(n); });
     p.classList.remove('hidden'); Editor.updateMeta();
   },
   status(st) {
-    const el = $('renderStatus'); el.className = 'pill ' + ({ ok: 'ok', err: 'err', busy: 'warn' }[st] || '');
-    el.querySelector('.lbl').textContent = st === 'ok' ? t('rendered') : st === 'err' ? t('renderErr') : st === 'busy' ? t('rendering') : '—';
+    const el = $('renderStatus'); el.className = 'pill ' + ({ ok: 'ok', err: 'err', busy: 'warn', warn: 'warn' }[st] || '');
+    el.querySelector('.lbl').textContent = st === 'ok' ? t('rendered') : st === 'err' ? t('renderErr') : st === 'busy' ? t('rendering') : st === 'warn' ? t('needsFix') : '—';
     el.dataset.st = st;
   }
 };
@@ -3243,6 +3682,7 @@ const View = {
       e.preventDefault(); v.focus({ preventScroll: true });
       try { v.setPointerCapture(e.pointerId); } catch {}
       pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      this._down = { x: e.clientX, y: e.clientY, node: e.target.closest && e.target.closest('g.node') };
       if (pts.size === 2) { const [p1, p2] = [...pts.values()]; pinch = { d: Math.hypot(p1.x - p2.x, p1.y - p2.y) }; }
       v.classList.add('panning'); this.hideHint();
     });
@@ -3256,7 +3696,11 @@ const View = {
       this.panBy(cur.x - prev.x, cur.y - prev.y);
     });
     const end = (e) => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!pts.size) v.classList.remove('panning'); };
-    v.addEventListener('pointerup', end); v.addEventListener('pointercancel', end);
+    v.addEventListener('pointerup', (e) => {
+      const d = this._down; this._down = null;
+      if (d && d.node && e.type === 'pointerup' && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 5) App.revealNode(d.node);
+      end(e);
+    }); v.addEventListener('pointercancel', end);
     v.addEventListener('wheel', (e) => {
       e.preventDefault();
       const r = v.getBoundingClientRect(), unit = e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? 400 : 1;
@@ -3284,7 +3728,9 @@ const Export = {
   currentSvg() {
     const svg = $('diagramOutput').querySelector('svg');
     if (!svg || !S.natural) throw new Error(t('exportNone'));
-    if (!S.lastRenderOk || S.lastRenderedCode !== ed().value) throw new Error(t('exportStale'));
+    Model.sync();
+    if (S.lastRenderedCode !== S.doc.code) throw new Error(t('exportStale'));
+    if (!S.lastRenderOk) throw new Error(Model.isSimple(S.doc) ? t('exportIssues') : t('exportStale'));
     return svg;
   },
   /** Build a standalone SVG string at natural size with padding + optional background. */
@@ -3354,7 +3800,7 @@ const Export = {
   /** Validate first (before asking for a name), then Save As, then build → write → verify. */
   async run(kind, build) {
     UI.closeMenus();
-    let svg = null; if (kind !== 'mmd') { try { svg = this.currentSvg(); } catch (e) { UI.toast(e.message, 'err', 6000); return null; } }
+    let svg = null; Model.sync(); if (kind !== 'mmd') { try { svg = this.currentSvg(); } catch (e) { UI.toast(e.message, 'err', 6000); return null; } }
     const k = this.KINDS[kind]; let note = null;
     try {
       const res = await Files.saveAs({ title: t('exportAsTitle', { k: kind.toUpperCase() }), suggested: S.doc.name, ...k,
@@ -3362,7 +3808,7 @@ const Export = {
       if (!res) return null;
       UI.toast(note || t('fileSavedVerified', { f: res.name }), note ? 'warn' : 'ok', note ? 6000 : 3500);
       return res;
-    } catch (e) { UI.toast([t('exportStale'), t('exportNone'), t('exportBlank')].includes(e.message) ? e.message : t('exportFail', { e: e.message || e }), 'err', 6000); return null; }
+    } catch (e) { UI.toast([t('exportStale'), t('exportNone'), t('exportBlank'), t('exportIssues')].includes(e.message) ? e.message : t('exportFail', { e: e.message || e }), 'err', 6000); return null; }
   },
   png() { return this.run('png', async (svg) => {
     const r = await this.rasterize(svg, { scale: S.settings.exportScale, bgKey: S.doc.bg, title: this.titleInfo() });
@@ -3413,7 +3859,7 @@ const Export = {
     const { xml } = this.buildSvg(svg, S.doc.bg);
     return { blob: new Blob([xml], { type: 'image/svg+xml;charset=utf-8' }) };
   }); },
-  mmd() { return this.run('mmd', async () => ({ blob: new Blob(['\uFEFF' + ed().value], { type: 'text/plain;charset=utf-8' }) })); }
+  mmd() { return this.run('mmd', async () => ({ blob: new Blob(['\uFEFF' + S.doc.code], { type: 'text/plain;charset=utf-8' }) })); }
 };
 
 /* ----------------------------- files ---------------------------- */
@@ -3423,7 +3869,7 @@ const Files = {
     a.href = url; a.download = name; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 4000);
   },
-  docPayload(d) { return { id: d.id, name: d.name, code: d.code, theme: d.theme, bg: d.bg, created: d.created, updated: d.updated }; },
+  docPayload(d) { return { id: d.id, name: d.name, mode: d.mode || 'mermaid', src: d.mode === 'simple' ? d.src : undefined, dir: d.dir, code: d.code, theme: d.theme, bg: d.bg, created: d.created, updated: d.updated }; },
   /**
    * Save As: the native "Save as" window (choose folder + name) where the browser supports it (Chrome / Edge),
    * otherwise an in-app file-name dialog followed by a normal download. Returns {name, renameTo} or null if cancelled.
@@ -3493,7 +3939,7 @@ const Files = {
       for (const d of v.docs) {
         const existing = d.id && Docs.load(d.id);
         if (existing && existing.code === d.code && existing.name === d.name) { lastDoc = existing; continue; }
-        const nd = { id: existing || !d.id ? Util.newId() : d.id, name: d.name, code: d.code, theme: d.theme, bg: d.bg };
+        const nd = { id: existing || !d.id ? Util.newId() : d.id, name: d.name, code: d.code, src: d.src, mode: d.mode, dir: d.dir, theme: d.theme, bg: d.bg };
         try { Docs.save(nd); } catch (e) { if (S.storageOk) throw e; }
         lastDoc = nd;
       }
@@ -3557,7 +4003,7 @@ const Net = {
   async publish(force) {
     const d = S.doc, sid = d.sharedId || d.id;
     try {
-      const res = await this.put(sid, { name: d.name, code: d.code, theme: d.theme, bg: d.bg, author: S.settings.author || 'anonymous', base_rev: force ? null : (d.sharedRev ?? null), force: !!force });
+      const res = await this.put(sid, { name: d.name, code: d.code, src: d.mode === 'simple' ? d.src : null, mode: d.mode || 'mermaid', dir: d.dir || 'TD', theme: d.theme, bg: d.bg, author: S.settings.author || 'anonymous', base_rev: force ? null : (d.sharedRev ?? null), force: !!force });
       d.sharedId = sid; d.sharedRev = res.rev; App.saveNow(true);
       // verify round-trip
       const back = await this.get(sid);
@@ -3572,14 +4018,14 @@ const Net = {
         const choice = await UI.dialog({ title: t('conflictTitle'), html: `<p>${Util.esc(t('conflictMsg', { a: c.author || '?', r: c.rev }))}</p>`,
           buttons: [{ label: t('cancel'), value: 'cancel' }, { label: t('loadTheirs'), value: 'theirs' }, { label: t('overwrite'), value: 'mine', primary: true }] });
         if (choice === 'mine') return this.publish(true);
-        if (choice === 'theirs') { const s = await this.get(sid); Docs.snapshot(S.doc, true); Object.assign(S.doc, { code: s.code, name: s.name, theme: Valid.theme(s.theme), bg: Valid.bg(s.bg), sharedRev: s.rev }); App.saveNow(true); App.openDoc(S.doc); }
+        if (choice === 'theirs') { const s = await this.get(sid); Docs.snapshot(S.doc, true); Object.assign(S.doc, Model.normalize({ code: s.code, src: s.src, mode: s.mode, dir: s.dir, name: s.name, theme: Valid.theme(s.theme), bg: Valid.bg(s.bg), sharedRev: s.rev })); App.saveNow(true); App.openDoc(S.doc); }
         return;
       }
       UI.toast(t('exportFail', { e: e.message }), 'err', 6000);
     }
   }
 };
-Render.lastOkGuard = function () { if (!S.lastRenderOk || S.lastRenderedCode !== ed().value) { UI.toast(t('exportStale'), 'err', 5000); return true; } return false; };
+Render.lastOkGuard = function () { Model.sync(); if (!S.lastRenderOk || S.lastRenderedCode !== S.doc.code) { UI.toast(Model.isSimple(S.doc) ? t('exportIssues') : t('exportStale'), 'err', 5000); return true; } return false; };
 
 /* ---------------------------- review ---------------------------- */
 const Review = {
@@ -3600,7 +4046,8 @@ const Review = {
       if (d.rev === S.review.rev) return true;
       const updated = S.review.rev != null;
       S.review.rev = d.rev; S.review.data = d;
-      S.doc = { id: 'review', name: d.name, code: d.code, theme: Valid.theme(d.theme), bg: Valid.bg(d.bg) };
+      S.doc = Model.normalize({ id: 'review', name: d.name, code: d.code, src: d.src, mode: d.mode, dir: d.dir, theme: Valid.theme(d.theme), bg: Valid.bg(d.bg) });
+      document.body.classList.toggle('simple', Model.isSimple(S.doc));
       App.applyDocToUi(first);
       $('bannerReview').classList.remove('hidden');
       $('bannerReview').querySelector('.lbl').textContent = t('reviewBanner', { n: d.name, a: d.author || '?', r: d.rev, t: Util.fmtTime(d.updated * 1000) });
@@ -3615,7 +4062,7 @@ const Review = {
   toggleCode() { document.body.classList.toggle('showcode'); setTimeout(() => View.fit(), 50); },
   copyToLibrary() {
     const d = S.review && S.review.data; if (!d) return;
-    const nd = { id: Util.newId(), name: d.name, code: d.code, theme: Valid.theme(d.theme), bg: Valid.bg(d.bg), sharedId: S.review.id, sharedRev: d.rev };
+    const nd = Model.normalize({ id: Util.newId(), name: d.name, code: d.code, src: d.src, mode: d.mode, dir: d.dir, theme: Valid.theme(d.theme), bg: Valid.bg(d.bg), sharedId: S.review.id, sharedRev: d.rev });
     try { Docs.save(nd); App.setSetting('lastId', nd.id); } catch (e) { UI.toast(e.message, 'err'); return; }
     location.href = location.pathname;
   },
@@ -3629,7 +4076,12 @@ const UI = {
     document.documentElement.lang = S.lang; document.documentElement.dir = S.lang === 'he' ? 'rtl' : 'ltr';
     document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
     document.querySelectorAll('[data-i18n-title]').forEach(el => el.title = t(el.dataset.i18nTitle));
-    const ps = $('presetSelect'); ps.innerHTML = `<option value="" selected disabled>${Util.esc(t('preset'))}</option>` + PRESETS.map(p => `<option value="${p.key}">${Util.esc(p[S.lang])}</option>`).join('');
+    const ps = $('presetSelect'); ps.innerHTML = `<option value="" selected disabled>${Util.esc(t('preset'))}</option>`
+      + `<optgroup label="${Util.esc(t('tplSimple'))}">` + WF_TEMPLATES.map(p => `<option value="${p.key}">${Util.esc(p[S.lang])}</option>`).join('') + '</optgroup>'
+      + `<optgroup label="${Util.esc(t('tplAdvanced'))}">` + PRESETS.map(p => `<option value="${p.key}">${Util.esc(p[S.lang])}</option>`).join('') + '</optgroup>';
+    $('dirSelect').innerHTML = Simple.DIRS.map(d => `<option value="${d}">${t('dir' + d)}</option>`).join('');
+    if (S.doc) $('dirSelect').value = S.doc.dir || 'TD';
+    App.renderGuide(); App.applyEditorDir();
     $('themeSelect').innerHTML = THEMES.map(x => `<option value="${x}">${t('th' + x[0].toUpperCase() + x.slice(1))}</option>`).join('');
     $('bgSelect').innerHTML = BGS.map(x => `<option value="${x}">${t('bg' + x[0].toUpperCase() + x.slice(1))}</option>`).join('');
     $('optPdf').innerHTML = PDF_MODES.map(x => `<option value="${x}">${t({ fit: 'pdfFit', a4: 'pdfA4', a3: 'pdfA3', a4tiles: 'pdfA4Tiles' }[x])}</option>`).join('');
@@ -3664,7 +4116,7 @@ const UI = {
       const close = (v) => { wrap.remove(); document.removeEventListener('keydown', key); resolve(v); };
       const key = (e) => { if (e.key === 'Escape' && host.lastElementChild === wrap) close(null);
         if (e.key === 'Enter' && host.lastElementChild === wrap && e.target.tagName === 'INPUT') { const p = buttons.findIndex(b => b.primary); if (p >= 0) { e.preventDefault(); const v = buttons[p].value; close(typeof v === 'function' ? v(wrap) : v); } } };
-      wrap.addEventListener('click', (e) => { if (e.target === wrap || e.target.closest('[data-x]')) return close(null);
+      wrap.addEventListener('click', (e) => { if (e.target === wrap || e.target.closest('[data-x]')) { if (wrap._pick != null) UI._lastPick = wrap._pick; return close(null); }
         const b = e.target.closest('[data-b]'); if (b) { const btn = buttons[+b.dataset.b]; close(typeof btn.value === 'function' ? btn.value(wrap) : btn.value); } });
       document.addEventListener('keydown', key);
       host.appendChild(wrap); onOpen && onOpen(wrap);
@@ -3726,14 +4178,14 @@ const UI = {
   async openHistory(id) {
     const doc = id === S.doc.id ? S.doc : Docs.load(id); if (!doc) return;
     const h = Docs.history(id);
-    const html = h.length ? `<div class="list">${h.map((v, i) => `<div class="row"><div class="nm"><b>${Util.fmtTime(v.t)}</b><span>${v.code.split('\n').length} ${t('lines')} · ${Util.esc(Util.detectType(v.code))}</span>
-        <pre class="code hidden" id="hv${i}">${Util.esc(v.code)}</pre></div><div class="acts"><button class="btn sm icon" onclick="document.getElementById('hv${i}').classList.toggle('hidden')"><svg class="i"><use href="#i-eye"/></svg></button>
-        <button class="btn sm" data-b-restore="${i}">${t('restoreVer')}</button></div></div>`).join('')}</div>` : `<p class="note">${t('histEmpty')}</p>`;
+    const html = h.length ? `<div class="list">${h.map((v, i) => { const txt = v.mode === 'simple' ? (v.src || '') : v.code; return `<div class="row"><div class="nm"><b>${Util.fmtTime(v.t)}</b><span>${txt.split('\n').length} ${t('lines')} · ${Util.esc(Model.typeLabel(v))}</span>
+        <pre class="code hidden" id="hv${i}">${Util.esc(txt)}</pre></div><div class="acts"><button class="btn sm icon" onclick="document.getElementById('hv${i}').classList.toggle('hidden')"><svg class="i"><use href="#i-eye"/></svg></button>
+        <button class="btn sm" data-b-restore="${i}">${t('restoreVer')}</button></div></div>`; }).join('')}</div>` : `<p class="note">${t('histEmpty')}</p>`;
     let chosen = null;
     await this.dialog({ title: t('histTitle', { n: doc.name }), size: 'md', html, buttons: [{ label: t('close'), value: null }],
       onOpen: (w) => w.querySelectorAll('[data-b-restore]').forEach(b => b.onclick = () => { chosen = +b.dataset.bRestore; w.querySelector('[data-x]').click(); }) });
     if (chosen == null) return;
-    const v = h[chosen]; Docs.snapshot(doc, true); doc.code = v.code;
+    const v = h[chosen]; Docs.snapshot(doc, true); Object.assign(doc, Model.normalize({ ...doc, code: v.code, src: v.src, mode: v.mode || 'mermaid', dir: v.dir || doc.dir }));
     try { Docs.save(doc); } catch (e) { UI.toast(e.message, 'err'); return; }
     if (doc.id === S.doc.id) App.openDoc(doc); else App.openDoc(doc);
     UI.toast(t('histRestored'));
@@ -3742,6 +4194,10 @@ const UI = {
     const ex = (id) => `<pre class="code" id="hx-${id}">${Util.esc(HELP_EX[id])}</pre><button class="btn sm primary" onclick="UI.useHelp('${id}')"><svg class="i"><use href="#i-down"/></svg>${t('loadIntoEditor')}</button>`;
     const he = S.lang === 'he';
     const html = `<div class="hp">
+      <div class="card" style="margin-bottom:14px;border-color:var(--accent)"><h4>${t('wfHelpTitle')}</h4><p style="margin:0 0 8px;font-size:12px;color:var(--muted)">${t('wfHelpIntro')}</p>
+        <div class="grid2"><div>${App.guideHtml()}</div><div><pre class="code">${Util.esc(WF_TEMPLATES[he ? 0 : 1].src)}</pre>
+        <button class="btn sm primary" onclick="App.loadPreset('${WF_TEMPLATES[he ? 0 : 1].key}');document.querySelectorAll('.overlay').forEach(o=>o.remove())"><svg class="i"><use href="#i-down"/></svg>${t('loadIntoEditor')}</button></div></div></div>
+      <h4 style="margin:4px 0 10px;color:var(--muted)">${t('tplAdvanced')}</h4>
       <div class="grid2">
         <div class="card"><h4>Flowchart / ${he ? 'תרשים זרימה' : 'process flow'}</h4><ul>
           <li><code>flowchart TD</code> ${he ? 'למעלה→למטה' : 'top-down'} · <code>LR</code> · <code>RL</code> ${he ? '(מומלץ לעברית)' : '(best for Hebrew)'}</li>
@@ -3773,7 +4229,7 @@ const UI = {
     </div>`;
     this.dialog({ title: t('helpTitle'), size: '', html, buttons: [{ label: t('close'), value: null }] });
   },
-  useHelp(id) { App.replaceCode(HELP_EX[id]); document.querySelectorAll('.overlay').forEach(o => o.remove()); }
+  useHelp(id) { App.loadTemplate({ mode: 'mermaid', code: HELP_EX[id] }); document.querySelectorAll('.overlay').forEach(o => o.remove()); }
 };
 
 const HELP_EX = {
@@ -3886,7 +4342,7 @@ const Tests = {
     });
     add('Current work is saved', async () => {
       if (S.review) return { skip: 'review mode' }; if (!S.storageOk) return { skip: t('storageUnavailable') };
-      App.saveNow(); const b = Docs.load(S.doc.id); if (!b || b.code !== ed().value) throw new Error('stored copy differs from editor'); return S.doc.name;
+      App.saveNow(); const b = Docs.load(S.doc.id); if (!b || b.code !== S.doc.code || (b.src || '') !== (S.doc.src || '') || Model.editorText(b) !== ed().value) throw new Error('stored copy differs from editor'); return S.doc.name + ' (' + (S.doc.mode || 'mermaid') + ')';
     });
     for (const p of PRESETS) add('Render template: ' + p.en, async () => {
       const el = await this.renderInto(p.code);
@@ -3931,6 +4387,38 @@ const Tests = {
       const dx = View.panX - px0, dy = View.panY - py0; View.panX = px0; View.panY = py0; View.apply();
       if (Math.abs(dx - 60) > 0.5 || Math.abs(dy - 35) > 0.5) throw new Error(`moved ${dx},${dy} instead of 60,35`);
       return 'moved exactly with the mouse';
+    });
+    add('Workflow text: steps, question, branches re-join, loop back', async () => {
+      const r = Simple.compile('Receive order\nIn stock?\n  Yes: Ship\n  No:\n    Order more\n    → Receive order\nend: Done');
+      const lab = r.edges.map(e => e.label).filter(Boolean).join(',');
+      if (!r.ok || r.nodes.length !== 5) throw new Error('nodes ' + r.nodes.length);
+      if (lab !== 'Yes,No') throw new Error('labels ' + lab);
+      if (!r.edges.some(e => e.jump)) throw new Error('loop missing');
+      const ship = r.nodes.find(n => n.text === 'Ship'), done = r.nodes.find(n => n.text === 'Done');
+      if (!r.edges.some(e => e.from === ship.id && e.to === done.id)) throw new Error('branch does not re-join');
+      if (r.nodes[0].shape !== 'start' || done.shape !== 'end') throw new Error('start/end shapes');
+      return `${r.nodes.length} shapes, ${r.edges.length} arrows`;
+    });
+    add('Workflow text: Hebrew keywords, groups and nested questions', async () => {
+      const r = Simple.compile('# מכירות\nפנייה\nמאושר?\n  כן:\n    תקציב קיים?\n      כן: חתימה\n      לא: סוף: נדחה\n  לא: חזור לפנייה\n# כספים\nנתונים: חשבונית\nסוף');
+      if (!r.ok) throw new Error(JSON.stringify(r.issues));
+      if (!/subgraph g1\["מכירות"\]/.test(r.code) || !/subgraph g2\["כספים"\]/.test(r.code)) throw new Error('groups');
+      if (!r.nodes.some(n => n.shape === 'data' && n.text === 'חשבונית')) throw new Error('data shape');
+      if (r.nodes.filter(n => n.shape === 'decision').length !== 2) throw new Error('nested question');
+      const el = await this.renderInto(r.code, 'dark'); return Math.round(el.viewBox.baseVal.width) + '×' + Math.round(el.viewBox.baseVal.height);
+    });
+    add('Workflow text: plain-language errors with suggestion', async () => {
+      const r = Simple.compile('Check stock\nApprove?\n→ Chek stok');
+      const j = r.issues.find(i => i.code === 'jumpNotFound'), nb = r.issues.find(i => i.code === 'noBranches');
+      if (!j || j.line !== 3 || j.s !== 'Check stock') throw new Error('no suggestion: ' + JSON.stringify(r.issues));
+      if (!nb || nb.line !== 2) throw new Error('missing "no answers" warning');
+      return Render.friendly([j])[0].msg;
+    });
+    for (const w of WF_TEMPLATES) add('Workflow template: ' + w.en, async () => {
+      const r = Simple.compile(w.src, { dir: w.dir }); if (!r.ok || r.issues.some(i => i.level !== 'info')) throw new Error(JSON.stringify(r.issues));
+      const el = await this.renderInto(r.code, 'dark');
+      if (el.querySelectorAll('foreignObject').length) throw new Error('HTML labels');
+      return r.nodes.length + ' shapes';
     });
     add('Syntax errors are reported with line number', async () => {
       try { await Render.toSvg('flowchart TD\n A-->B\n B-->{{{', 'default'); } catch (e) { const m = String(e.message || e.str || e); if (!/line\s+\d+/i.test(m)) throw new Error('no line info: ' + m.slice(0, 80)); return 'ok'; } finally { Render.configured = null; }
@@ -4004,7 +4492,7 @@ const App = {
   },
   onCodeChanged() {
     if (S.review) return;
-    S.doc.code = ed().value; S.saveState = 'dirty'; this.updateSaveStatus();
+    Model.sync(); S.saveState = 'dirty'; this.updateSaveStatus();
     clearTimeout(S.saveTimer); S.saveTimer = setTimeout(() => this.saveNow(), 700);
     if (S.autoRender) Render.schedule();
   },
@@ -4012,27 +4500,30 @@ const App = {
   saveNow(silent) {
     clearTimeout(S.saveTimer);
     if (!S.doc || S.review) return false;
-    S.doc.code = ed().value;
+    Model.sync();
     try { Docs.save(S.doc); S.saveState = 'saved'; S.saveError = null; this.setSetting('lastId', S.doc.id); }
     catch (e) { S.saveState = 'error'; S.saveError = Store.isQuota(e) ? t('storageFull') : e.message; if (!silent) UI.toast(S.saveError, 'err', 6000); this.updateSaveStatus(); return false; }
     this.updateSaveStatus(); return true;
   },
   applyDocToUi(fit = true) {
-    Editor.set(S.doc.code); $('docName').value = S.doc.name;
+    document.body.classList.toggle('simple', Model.isSimple(S.doc));
+    Editor.set(Model.editorText(S.doc)); $('docName').value = S.doc.name; $('dirSelect').value = S.doc.dir || 'TD';
+    $('backToSimple').classList.toggle('hidden', typeof S.doc.src !== 'string');
+    this.applyEditorDir(); this.applyPanels();
     $('themeSelect').value = S.doc.theme; $('bgSelect').value = S.doc.bg;
     $('canvasViewport').className = 'bg-' + S.doc.bg;
     if (!S.review) document.title = S.doc.name + ' – FlowChartCreation';
     S.fitOnNextRender = fit; Render.run();
   },
   openDoc(doc) {
-    S.doc = { theme: 'dark', bg: 'dark', ...doc, theme: Valid.theme(doc.theme), bg: Valid.bg(doc.bg) };
+    S.doc = Model.normalize({ theme: 'dark', bg: 'dark', ...doc, theme: Valid.theme(doc.theme), bg: Valid.bg(doc.bg) });
     S.saveState = 'saved'; this.setSetting('lastId', S.doc.id); this.applyDocToUi(true); this.updateSaveStatus();
   },
   openById(id) { this.saveNow(); const d = Docs.load(id); if (d) { this.openDoc(d); document.querySelectorAll('.overlay').forEach(o => o.remove()); UI.libOpen = false; } },
   newDoc() {
     this.saveNow();
     const n = Docs.index().length + 1;
-    const d = { id: Util.newId(), name: (S.lang === 'he' ? 'תרשים ' : 'Diagram ') + n, code: t('newStarter'), theme: 'dark', bg: 'dark' };
+    const d = Model.normalize({ id: Util.newId(), name: (S.lang === 'he' ? 'תהליך ' : 'Workflow ') + n, mode: 'simple', src: t('newStarterSimple'), dir: 'TD', theme: 'dark', bg: 'dark' });
     try { Docs.save(d); } catch (e) { if (S.storageOk) UI.toast(e.message, 'err'); }
     this.openDoc(d); document.querySelectorAll('.overlay').forEach(o => o.remove()); UI.libOpen = false;
     setTimeout(() => { $('docName').focus(); $('docName').select(); }, 50);
@@ -4047,7 +4538,7 @@ const App = {
   },
   duplicateDoc(id) {
     const d = id === S.doc.id ? (this.saveNow(), S.doc) : Docs.load(id); if (!d) return;
-    const nd = { id: Util.newId(), name: (d.name + t('copySuffix')).slice(0, LIMITS.nameChars), code: d.code, theme: d.theme, bg: d.bg };
+    const nd = { id: Util.newId(), name: (d.name + t('copySuffix')).slice(0, LIMITS.nameChars), code: d.code, src: d.src, mode: d.mode, dir: d.dir, theme: d.theme, bg: d.bg };
     try { Docs.save(nd); } catch (e) { UI.toast(e.message, 'err'); return; }
     UI.renderLibrary();
   },
@@ -4061,7 +4552,7 @@ const App = {
   async importShared(id) {
     try {
       const d = await Net.get(id);
-      const nd = { id: Util.newId(), name: d.name, code: d.code, theme: Valid.theme(d.theme), bg: Valid.bg(d.bg), sharedId: id, sharedRev: d.rev };
+      const nd = Model.normalize({ id: Util.newId(), name: d.name, code: d.code, src: d.src, mode: d.mode, dir: d.dir, theme: Valid.theme(d.theme), bg: Valid.bg(d.bg), sharedId: id, sharedRev: d.rev });
       Docs.save(nd); this.openById(nd.id); UI.toast(t('openOk', { n: d.name }));
     } catch (e) { UI.toast(e.message, 'err'); }
   },
@@ -4069,13 +4560,83 @@ const App = {
     if (!(await UI.confirm(t('del'), t('confirmDelete', { n: id }), t('del'), true))) return;
     try { await Net.del(id); } catch (e) { UI.toast(e.message, 'err'); } UI.renderLibrary();
   },
-  replaceCode(code) {
+  /** Replace the current content with a template (simple workflow text or Mermaid). Previous content goes to History. */
+  loadTemplate({ mode, src, code, dir }) {
     if (S.review) return;
-    Docs.snapshot(S.doc, true);
-    Editor.set(code); S.fitOnNextRender = true; this.onCodeChanged(); this.saveNow(true); Render.run();
+    Model.sync(); Docs.snapshot(S.doc, true);
+    if (mode === 'simple') Object.assign(S.doc, { mode: 'simple', src, dir: dir || S.doc.dir || 'TD' });
+    else Object.assign(S.doc, { mode: 'mermaid', code });
+    Model.normalize(S.doc); this.applyDocToUi(true); this.saveNow(true);
     UI.toast(t('presetLoaded'));
   },
-  loadPreset(key) { const p = PRESETS.find(x => x.key === key); if (p) this.replaceCode(p.code); },
+  replaceCode(code) { this.loadTemplate({ mode: 'mermaid', code }); },
+  loadPreset(key) {
+    const w = WF_TEMPLATES.find(x => x.key === key); if (w) return this.loadTemplate({ mode: 'simple', src: w.src, dir: w.dir });
+    const p = PRESETS.find(x => x.key === key); if (p) this.loadTemplate({ mode: 'mermaid', code: p.code });
+  },
+  setDir(v) { if (!S.doc) return; S.doc.dir = Simple.DIRS.includes(v) ? v : 'TD'; S.fitOnNextRender = true; Model.sync(); if (!S.review) this.saveNow(true); Render.run(); },
+  async toAdvanced() {
+    if (S.review || !Model.isSimple(S.doc)) return;
+    if (!(await UI.confirm(t('toAdvTitle'), t('toAdvMsg'), t('editAsMermaid')))) return;
+    Model.sync(); Docs.snapshot(S.doc, true);
+    S.doc.mode = 'mermaid'; this.applyDocToUi(false); this.saveNow(true);
+  },
+  async toSimple() {
+    if (S.review || Model.isSimple(S.doc)) return;
+    if (typeof S.doc.src !== 'string') { UI.dialog({ title: t('backToSimple'), html: `<p class="note">${Util.esc(t('noSimpleSrc'))}</p>`, buttons: [{ label: t('ok'), value: null, primary: true }] }); return; }
+    Model.sync();
+    const unchanged = Simple.compile(S.doc.src, { dir: S.doc.dir }).code === S.doc.code;
+    if (!unchanged && !(await UI.confirm(t('toSimpleTitle'), t('toSimpleMsg'), t('backToSimple')))) return;
+    Docs.snapshot(S.doc, true); S.doc.mode = 'simple'; Model.normalize(S.doc); this.applyDocToUi(false); this.saveNow(true);
+  },
+  /** Clicking a shape in the preview selects its line in the workflow text. */
+  revealNode(g) {
+    if (!Model.isSimple(S.doc)) return;
+    const m = (g.id || '').match(/flowchart-(n\d+)-/), comp = S.compiledShown || S.compiled; if (!m || !comp) return;
+    const line = comp.lineOf[m[1]]; if (!line) return;
+    if (S.review && !document.body.classList.contains('showcode')) Review.toggleCode();
+    Editor.jumpToLine(line);
+  },
+  togglePanel(which) {
+    const key = which === 'mmd' ? 'showMermaid' : 'showGuide', other = which === 'mmd' ? 'showGuide' : 'showMermaid';
+    const on = !S.settings[key]; this.setSetting(key, on); if (on) this.setSetting(other, false); // one panel at a time keeps the editor usable
+    this.applyPanels();
+  },
+  applyPanels() {
+    $('mmdPanel').classList.toggle('hidden', !S.settings.showMermaid);
+    $('guidePanel').classList.toggle('hidden', !S.settings.showGuide);
+    $('mmdToggle').classList.toggle('primary', !!S.settings.showMermaid);
+    $('guideToggle').classList.toggle('primary', !!S.settings.showGuide);
+    this.updateMermaidPanel();
+  },
+  updateMermaidPanel() { const o = $('mmdOut'); if (o && S.doc && S.settings.showMermaid) o.textContent = S.doc.code || ''; },
+  async copyMermaid() { Model.sync(); const ok = await Util.copyText(S.doc.code || ''); UI.toast(ok ? t('copiedCode') : t('copyFail'), ok ? 'ok' : 'err'); },
+  applyEditorDir() { const e = ed(); if (e) e.style.direction = (Model.isSimple(S.doc) && S.lang === 'he') ? 'rtl' : 'ltr'; },
+  guideHtml() {
+    const he = S.lang === 'he';
+    const rows = he ? [
+      ['שלב', 'סתם שורה', 'בדיקת מלאי'],
+      ['שאלה', 'שורה שמסתיימת ב-?', 'יש במלאי?'],
+      ['תשובות', 'שורות מוזחות עם „תשובה:”', '  כן: שליחה ללקוח\n  לא: הזמנת רכש'],
+      ['כמה שלבים בתשובה', 'מתחת לתשובה, מוזח עוד', '  לא:\n    הזמנת רכש\n    המתנה לסחורה'],
+      ['חזרה לשלב', '„חזור ל…” או →', 'חזור לבדיקת מלאי'],
+      ['סיום', 'סוף: …', 'סוף: ההזמנה נשלחה'],
+      ['נתונים', 'נתונים: …', 'נתונים: SQL Server'],
+      ['קבוצה / מחלקה', '# שם', '# מחסן'],
+      ['הערה', '// …', '// לא יוצג בתרשים'] ] : [
+      ['Step', 'any plain line', 'Check stock'],
+      ['Question', 'line ending with ?', 'In stock?'],
+      ['Answers', 'indented "answer:" lines', '  Yes: Ship to customer\n  No: Order more'],
+      ['Several steps in an answer', 'indent further below it', '  No:\n    Create PO\n    Wait for goods'],
+      ['Go back / jump', '→ or "go to"', '→ Check stock'],
+      ['End', 'end: …', 'end: Order shipped'],
+      ['Data / database', 'data: …', 'data: SQL Server'],
+      ['Group / department', '# name', '# Warehouse'],
+      ['Comment', '// …', '// not shown'] ];
+    return `<div class="guide">${rows.map(r => `<b style="color:var(--text);font-size:12px">${Util.esc(r[0])}</b><div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><span style="display:inline-flex;flex-direction:column;gap:2px">${r[2].split('\n').map(l => `<code dir="auto" style="display:block">${Util.esc(l)}</code>`).join('')}</span><span style="font-size:11px">${Util.esc(r[1])}</span></div>`).join('')}</div>
+      <p style="margin:10px 0 0;font-size:11.5px">${he ? 'אחרי התשובות, השורה הלא-מוזחת הבאה מחברת את כל הענפים. Enter שומר על ההזחה; Enter בשורה ריקה חוזר רמה אחת. לחיצה על צורה בתרשים מסמנת את השורה שלה.' : 'After the answers, the next un-indented line joins all branches again. Enter keeps the indentation; Enter on an empty line steps one level back. Click a shape in the diagram to find its line.'}</p>`;
+  },
+  renderGuide() { const b = $('guideBody'); if (b) b.innerHTML = this.guideHtml(); },
   setTheme(v) { S.doc.theme = Valid.theme(v); Render.configured = null; if (!S.review) this.saveNow(true); Render.run(); },
   setBg(v) { S.doc.bg = Valid.bg(v); $('canvasViewport').className = 'bg-' + S.doc.bg; if (!S.review) this.saveNow(true);
     if (S.doc.bg === 'light' && S.doc.theme === 'dark') { $('themeSelect').value = 'default'; this.setTheme('default'); }
@@ -4132,14 +4693,16 @@ const App = {
     UI.applyI18n(); Editor.init(); View.initPan(); Files.initDrop(); this.initSplitter(); this.initKeys();
     // 3) review mode?
     const params = new URLSearchParams(location.search);
-    if (params.get('view')) { S.doc = { id: 'review', name: '', code: '', theme: 'dark', bg: 'dark' }; await Review.start(params.get('view')); return; }
+    if (params.get('view')) { S.doc = { id: 'review', name: '', code: '', mode: 'mermaid', theme: 'dark', bg: 'dark' }; await Review.start(params.get('view')); return; }
     // 4) restore last work (with index repair)
     Docs.repairIndex();
     let doc = S.settings.lastId && Docs.load(S.settings.lastId);
     if (!doc) { const first = Docs.index()[0]; doc = first && Docs.load(first.id); }
     if (!doc) {
       // migrate legacy v1 autosave if present, else start with a template
-      doc = { id: Util.newId(), name: S.lang === 'he' ? 'התרשים הראשון שלי' : 'My first diagram', code: PRESETS[S.lang === 'he' ? 1 : 0].code, theme: 'dark', bg: 'dark' };
+      const w = WF_TEMPLATES[S.lang === 'he' ? 0 : 1];
+      doc = Model.normalize({ id: Util.newId(), name: S.lang === 'he' ? 'התהליך הראשון שלי' : 'My first workflow', mode: 'simple', src: w.src, dir: w.dir, theme: 'dark', bg: 'dark' });
+      if (S.settings.showGuide == null) this.setSetting('showGuide', true);
       try { Docs.save(doc); } catch {}
     }
     this.openDoc(doc);

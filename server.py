@@ -30,7 +30,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 APP = "FlowChartCreation"
-VERSION = "2.0.0"
+VERSION = "2.2.0"
 HERE = Path(__file__).resolve().parent
 HTML_FILE = HERE / "FlowChartCreation.html"
 ID_RE = re.compile(r"^[a-z0-9-]{1,64}$")
@@ -39,6 +39,8 @@ MAX_CODE = 200_000            # characters of diagram code
 MAX_NAME = 80
 THEMES = {"dark", "default", "forest", "neutral"}
 BGS = {"dark", "light", "transparent"}
+MODES = {"simple", "mermaid"}
+DIRS = {"TD", "LR", "RL", "BT"}
 
 
 @dataclass
@@ -89,7 +91,7 @@ def write_doc_atomic(doc_id: str, doc: dict) -> None:
 
 
 def meta(doc: dict) -> dict:
-    return {k: doc.get(k) for k in ("id", "name", "author", "rev", "updated", "theme", "bg")}
+    return {k: doc.get(k) for k in ("id", "name", "author", "rev", "updated", "theme", "bg", "mode")}
 
 
 def validate_body(body: object) -> tuple[dict | None, str | None]:
@@ -105,6 +107,12 @@ def validate_body(body: object) -> tuple[dict | None, str | None]:
     if re.search(r'[<>:"/\\|?*\x00-\x1f]', name):
         return None, "name contains invalid characters"
     author = body.get("author") if isinstance(body.get("author"), str) else "anonymous"
+    src = body.get("src")
+    if src is not None and (not isinstance(src, str) or len(src) > MAX_CODE):
+        return None, f"src must be a string of at most {MAX_CODE} characters"
+    mode = body.get("mode") if body.get("mode") in MODES else "mermaid"
+    if mode == "simple" and src is None:
+        mode = "mermaid"
     base_rev = body.get("base_rev")
     if base_rev is not None and not isinstance(base_rev, int):
         return None, "base_rev must be an integer or null"
@@ -113,6 +121,9 @@ def validate_body(body: object) -> tuple[dict | None, str | None]:
         "code": code,
         "theme": body.get("theme") if body.get("theme") in THEMES else "dark",
         "bg": body.get("bg") if body.get("bg") in BGS else "dark",
+        "src": src if mode == "simple" else None,
+        "mode": mode,
+        "dir": body.get("dir") if body.get("dir") in DIRS else "TD",
         "author": (author.strip() or "anonymous")[:40],
         "base_rev": base_rev,
         "force": bool(body.get("force")),
@@ -206,7 +217,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._err(409, "conflict: diagram changed since your last publish", current=meta(current))
             now = time.time()
             doc = {
-                "id": doc_id, "name": clean["name"], "code": clean["code"], "theme": clean["theme"], "bg": clean["bg"],
+                "id": doc_id, "name": clean["name"], "code": clean["code"], "src": clean["src"], "mode": clean["mode"], "dir": clean["dir"],
+                "theme": clean["theme"], "bg": clean["bg"],
                 "author": clean["author"], "rev": (current.get("rev", 0) + 1) if current else 1,
                 "created": current.get("created", now) if current else now, "updated": now,
             }

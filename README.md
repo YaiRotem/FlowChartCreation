@@ -1,6 +1,6 @@
-# FlowChartCreation 2.0
+# FlowChartCreation 2.2
 
-A self-contained diagram studio for creating and managing workflows with [Mermaid](https://mermaid.js.org) syntax — flowcharts, sequence, state, class and Gantt diagrams — in **Hebrew and English**.
+A self-contained studio for creating and managing workflows in **Hebrew and English**. You describe the process in plain text — one step per line — and the diagram is drawn for you. The underlying [Mermaid](https://mermaid.js.org) code is generated automatically and stays out of the way (advanced users can view or edit it).
 
 Everything (Mermaid 10.9.3 and jsPDF 2.5.2 included) lives inside **one HTML file**. No internet connection, installation or build step is needed.
 
@@ -12,6 +12,36 @@ Everything (Mermaid 10.9.3 and jsPDF 2.5.2 included) lives inside **one HTML fil
 | `server.py` | Optional local-network server for sharing and reviewing (Python 3.8+, standard library only). |
 | `start_server.bat` / `start_server.sh` | One-click launchers for the server (Windows / macOS-Linux). |
 | `shared_diagrams/` | Created by the server; one JSON file per shared diagram. |
+
+## Writing a workflow (simple text)
+
+```
+Receive customer order            ← each line is a step; steps connect top to bottom
+Check stock in ERP
+In stock?                         ← a line ending with "?" is a question
+  Yes: Send to warehouse          ← indented "answer:" lines are the branches
+  No:
+    Create purchase order         ← several steps in an answer: indent further
+    → Check stock in ERP          ← "→" or "go to" jumps back to an existing step
+data: Update SQL Server           ← shape words: data:, end:, input:, sub:
+end: Order completed
+```
+
+| Write | Result |
+|---|---|
+| a plain line | step (the first one is drawn as the start oval, the last as the end oval) |
+| line ending with `?` (or starting with `if` / `אם`) | question (diamond) |
+| indented `Yes: …`, `No: …`, `Approved: …` | branches with that label on the arrow – any wording works |
+| `→ step`, `go to step`, `חזור ל…` | dashed arrow back (or forward) to a step that already exists |
+| `end: …` / `סוף: …`, `data: …` / `נתונים: …`, `input: …` / `קלט: …`, `sub: …` | end, database, input/output, sub-process shapes |
+| `# Warehouse` | group / swim lane for the following lines (`#` alone ends it) |
+| `// …` | comment (not drawn) |
+
+After the answers, the next line with less indentation joins all branches again. Hebrew and English keywords both work in either interface language.
+
+**Helpers:** the buttons above the text (Step, Question, Go back to…, Data, End, Group) insert the right line with the right indentation; *Go back to…* lets you pick the step from a list. **Enter** keeps the indentation (and goes one level deeper after a question or an `answer:`); Enter on an empty line steps one level back. **Click a shape** in the diagram to jump to its line. Mistakes are explained in plain language with the line number and a "did you mean…" suggestion, and the line is highlighted. The **Guide** button shows a cheat sheet; the direction box sets the flow (↓ → ← ↑).
+
+**Mermaid code (advanced):** the `</>` button shows the generated code read-only, with *Copy* and *Edit as Mermaid…*. Editing as Mermaid switches that diagram to code mode (badge "Advanced"); *Back to simple text* returns to your text (the code version is kept in History). Sequence, Gantt, class and state diagrams are available as Mermaid templates under *Templates → Advanced*.
 
 ## Features
 
@@ -44,7 +74,7 @@ If others can't connect, allow Python through the Windows firewall for **Private
 
 ## Verification
 
-Click **Self-test** (header) to run the built-in checks: libraries loaded offline with no external requests, storage round-trip with Hebrew, save → verify → history → delete, rendering of every template, Hebrew label alignment, syntax-error line reporting, PNG and all four PDF modes, SVG validity, project-file validation (accepts good / rejects malformed or oversized files), name validation, and — when opened through the server — publish / read-back / conflict detection / delete. *Copy report* puts the results on the clipboard.
+Click **Self-test** (header) to run the built-in checks: workflow-text compiler (branches, loops, Hebrew keywords, groups, error messages, every template), libraries loaded offline with no external requests, storage round-trip with Hebrew, save → verify → history → delete, rendering of every template, Hebrew label alignment, syntax-error line reporting, PNG and all four PDF modes, SVG validity, project-file validation (accepts good / rejects malformed or oversized files), name validation, and — when opened through the server — publish / read-back / conflict detection / delete. *Copy report* puts the results on the clipboard.
 
 ## Shortcuts
 
