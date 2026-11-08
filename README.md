@@ -1,4 +1,4 @@
-# FlowChartCreation 2.2
+# FlowChartCreation 2.2.2
 
 A self-contained studio for creating and managing workflows in **Hebrew and English**. You describe the process in plain text — one step per line — and the diagram is drawn for you. The underlying [Mermaid](https://mermaid.js.org) code is generated automatically and stays out of the way (advanced users can view or edit it).
 
@@ -11,6 +11,8 @@ Everything (Mermaid 10.9.3 and jsPDF 2.5.2 included) lives inside **one HTML fil
 | `FlowChartCreation.html` | The app. Double-click to open in Chrome, Edge or Firefox. |
 | `server.py` | Optional local-network server for sharing and reviewing (Python 3.8+, standard library only). |
 | `start_server.bat` / `start_server.sh` | One-click launchers for the server (Windows / macOS-Linux). |
+| `verify_files.bat` / `verify_files.sh` | Checks every file against `CHECKSUMS.sha256` (SHA-256). Run it if the app shows a blank page or the "file is damaged" message. |
+| `CHECKSUMS.sha256` | Expected SHA-256 of each file. |
 | `shared_diagrams/` | Created by the server; one JSON file per shared diagram. |
 
 ## Writing a workflow (simple text)
@@ -73,6 +75,13 @@ Server options: `--port 9000`, `--read-only` (view only), `--host 127.0.0.1` (th
 If others can't connect, allow Python through the Windows firewall for **Private** networks. There is no login — run it only on networks you trust.
 
 ## Verification
+
+**Nothing to install.** The app needs only a modern browser (Chrome, Edge, Firefox); all libraries are inside the HTML file. The optional server needs Python 3.8+ with its standard library only – there is no `requirements.txt` because there are no third-party packages.
+
+**If the page stays blank or reports "This file is damaged":** the file was corrupted in transfer (e.g. a CRC error while unzipping or copying). Download the ZIP again, use *Extract All*, and run `verify_files.bat` – every line should say `OK`. Some corporate security/DLP tools rewrite or block large HTML files with embedded scripts; if a fresh copy still fails the check, copy it through a different route or ask IT to allow it.
+
+**Copying through Word-based tools (e.g. CodeDoc):** the HTML contains no control characters, so it survives a Word/.docx round trip byte-for-byte (verified with CodeDoc export → import).
+
 
 Click **Self-test** (header) to run the built-in checks: workflow-text compiler (branches, loops, Hebrew keywords, groups, error messages, every template), libraries loaded offline with no external requests, storage round-trip with Hebrew, save → verify → history → delete, rendering of every template, Hebrew label alignment, syntax-error line reporting, PNG and all four PDF modes, SVG validity, project-file validation (accepts good / rejects malformed or oversized files), name validation, and — when opened through the server — publish / read-back / conflict detection / delete. *Copy report* puts the results on the clipboard.
 
