@@ -5,8 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark">
 <title>FlowChartCreation</title>
-<!-- FlowChartCreation v2.2.2 — single-file, fully offline build.
+<!-- FlowChartCreation v2.3.0 — single-file, fully offline build.
      Bundled: Mermaid 10.9.3 (MIT), jsPDF 2.5.2 (MIT). No network access needed. -->
+<script>
+/* ========================== ABOUT – EDIT HERE ==========================
+   Shown in the app's About window (the ⓘ button). Type your details between the quotes,
+   save the file as UTF-8, then run update_checksums.bat (or .sh) so verify_files stays green.  */
+window.FCC_ABOUT = {
+  creator: "",        // e.g. "Dana Levi"
+  email: "",          // e.g. "dana@example.com"
+  organization: ""    // optional, e.g. "Operations team"
+};
+/* ====================================================================== */
+</script>
 <style>
 :root{
   --bg:#0b1020; --panel:#111827; --panel2:#0f172a; --panel3:#1e293b; --line:#253047; --line2:#334155;
@@ -59,6 +70,10 @@ header{height:52px;flex:none;display:flex;align-items:center;gap:10px;padding:0 
 .banner.warn{background:rgba(245,158,11,.12);color:#fcd34d}
 .banner.err{background:rgba(244,63,94,.14);color:#fecdd3}
 .banner.review{background:rgba(56,189,248,.12);color:#bae6fd}
+.banner.live{background:rgba(34,197,94,.12);color:#bbf7d0;flex-wrap:wrap}.banner.live.lost{background:rgba(234,179,8,.16);color:#fde68a}
+.banner .spacer{flex:1}#livePeople{display:flex;gap:6px;flex-wrap:wrap}.lp{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.07);color:var(--text)}
+.lp i{width:9px;height:9px;border-radius:50%;display:inline-block}.lp small{color:var(--muted)}
+#gutter div.liveline{color:#0b1020;border-radius:3px;font-weight:700}
 
 /* workspace */
 main{flex:1;display:flex;min-height:0}
@@ -70,6 +85,8 @@ main{flex:1;display:flex;min-height:0}
 .bar .ttl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px;margin-inline-end:4px;white-space:nowrap}
 .editor-wrap{flex:1;position:relative;min-height:150px;display:flex}
 #gutter{width:42px;flex:none;padding:12px 6px 12px 0;text-align:right;font:12px/1.6 var(--mono);color:var(--dim);background:var(--panel2);overflow:hidden;user-select:none;border-inline-end:1px solid var(--line);direction:ltr}
+.kvs{display:grid;gap:6px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel2)}
+.kv{display:flex;gap:12px;align-items:baseline}.kv>span{color:var(--muted);min-width:130px;flex:none}.kv>b{font-weight:600;word-break:break-word}
 #gutter div.errline{color:#fff;background:var(--err);border-radius:3px}
 #gutter div.warnline{color:#111;background:var(--warn);border-radius:3px}
 #codeEditor{flex:1;resize:none;border:0;outline:0;background:#0a0f1d;color:#e2e8f0;padding:12px 14px;font:12.5px/1.6 var(--mono);white-space:pre;overflow:auto;tab-size:4;direction:ltr;unicode-bidi:plaintext}
@@ -203,7 +220,9 @@ body.review .edit-only{display:none!important}
  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></symbol>
  <symbol id="i-lang" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.7 5.7 3.7 9S14.5 18.3 12 21c-2.5-2.7-3.7-5.7-3.7-9S9.5 5.7 12 3z"/></symbol>
  <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/><path d="M7 15h10"/></symbol>
- <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/></symbol>
+ <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c3 .2 5.5 2.6 5.5 5.8"/></symbol>
+<symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/></symbol>
  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></symbol>
  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></symbol>
  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
@@ -245,11 +264,15 @@ body.review .edit-only{display:none!important}
     <button class="btn" onclick="App.toggleLang()" id="langBtn"><svg class="i"><use href="#i-lang"/></svg><span data-i18n="langBtn"></span></button>
     <button class="btn" onclick="Tests.open()"><svg class="i" style="color:var(--ok)"><use href="#i-flask"/></svg><span data-i18n="tests" class="hide-sm"></span></button>
     <button class="btn icon" onclick="UI.openHelp()" data-i18n-title="help"><svg class="i"><use href="#i-help"/></svg></button>
+    <button class="btn icon" onclick="UI.openAbout()" data-i18n-title="about" id="aboutBtn"><svg class="i"><use href="#i-info"/></svg></button>
   </div>
 </header>
 
 <div id="bannerFatal" class="banner err hidden"><svg class="i"><use href="#i-warn"/></svg><span class="lbl"></span></div>
 <div id="bannerStorage" class="banner warn hidden"><svg class="i"><use href="#i-warn"/></svg><span data-i18n="storageUnavailable"></span></div>
+<div id="bannerLive" class="banner live hidden"><svg class="i"><use href="#i-users"/></svg><b id="liveCount"></b><span id="liveState" class="lbl"></span><span id="livePeople"></span><span class="spacer"></span>
+  <button class="btn sm" onclick="Live.copyLink()"><svg class="i"><use href="#i-copy"/></svg><span data-i18n="liveCopyLink"></span></button>
+  <button class="btn sm" onclick="Live.leave()"><svg class="i"><use href="#i-x"/></svg><span data-i18n="liveLeave"></span></button></div>
 <div id="bannerReview" class="banner review hidden">
   <svg class="i"><use href="#i-eye"/></svg><span class="lbl" style="flex:1"></span>
   <button class="btn sm" onclick="Review.toggleCode()"><svg class="i"><use href="#i-code"/></svg><span data-i18n="showCode"></span></button>
@@ -276,6 +299,7 @@ body.review .edit-only{display:none!important}
       <button class="btn" onclick="Editor.insert('group')" data-i18n-title="insGroupHint"><b>#</b><span data-i18n="insGroup"></span></button>
       <div class="spacer"></div>
       <select id="dirSelect" onchange="App.setDir(this.value)" data-i18n-title="dirHint"></select>
+      <select id="textDirSelect" onchange="App.setTextDir(this.value)" data-i18n-title="textDirHint"></select>
       <button class="btn" id="guideToggle" onclick="App.togglePanel('guide')"><svg class="i"><use href="#i-help"/></svg><span data-i18n="guide"></span></button>
     </div>
     <div class="toolrow mermaid-only edit-only" id="advRow">
@@ -355,6 +379,8 @@ window.addEventListener('load', function () {
     var missing = [];
     if (typeof window.mermaid === 'undefined') missing.push('Mermaid engine');
     if (typeof Simple === 'undefined') missing.push('workflow-text converter');
+    if (typeof Arrows === 'undefined') missing.push('arrow router');
+    if (typeof LiveOT === 'undefined') missing.push('live-editing engine');
     if (!window.jspdf) missing.push('PDF library');
     if (!window.__fccAppScript) missing.push('application code');
     var he = (navigator.language || '').indexOf('he') === 0;
@@ -2482,7 +2508,9 @@ const Simple = (() => {
   const label = (s, maxLen) => wrap(s, maxLen).map(esc).join('<br/>');
 
   function compile(src, opts = {}) {
-    const dir = DIRS.includes(opts.dir) ? opts.dir : 'TD';
+    let dir = DIRS.includes(opts.dir) ? opts.dir : 'TD';
+    // Right-to-left documents (Hebrew): a left-to-right flow runs right-to-left, and answers are laid out right-to-left
+    if (opts.rtl && dir === 'LR') dir = 'RL';
     const wrapAt = opts.wrapAt || 26;
     const issues = [];
     const nodes = [], edges = [], jumps = [], groups = [];
@@ -2549,7 +2577,7 @@ const Simple = (() => {
           const d = addNode(it, 'decision'); connect(entries, d.id);
           const exits = [];
           if (!it.branches.length) exits.push({ from: d.id });
-          for (const br of it.branches) {
+          for (const br of (opts.rtl ? it.branches.slice().reverse() : it.branches)) {
             if (!br.items.length) exits.push({ from: d.id, label: br.label });
             else exits.push(...build(br.items, [{ from: d.id, label: br.label }]));
           }
@@ -2597,18 +2625,463 @@ const Simple = (() => {
       members.forEach(n => out.push('        ' + decl(n)));
       out.push('    end');
     }
-    for (const e of edges) out.push(`    ${e.from} ${e.jump ? '-.->' : '-->'}${e.label ? `|"${label(e.label, 18)}"|` : ''} ${e.to}`);
+    // Loops ("go back" arrows that point upstream) are kept in the Mermaid code for anyone who copies it,
+    // but left out of the layout the app renders – Arrows draws them along their own lanes afterwards.
+    const fwd = new Map(); edges.filter(e => !e.jump).forEach(e => { if (!fwd.has(e.from)) fwd.set(e.from, []); fwd.get(e.from).push(e.to); });
+    const reaches = (a, b) => { const seen = new Set([a]), st = [a]; while (st.length) { const x = st.pop(); if (x === b) return true; for (const y of fwd.get(x) || []) if (!seen.has(y)) { seen.add(y); st.push(y); } } return false; };
+    const loops = [], layout = out.slice();
+    for (const e of edges) {
+      const line = `    ${e.from} ${e.jump ? '-.->' : '-->'}${e.label ? `|"${label(e.label, 18)}"|` : ''} ${e.to}`;
+      out.push(line);
+      if (e.jump && reaches(e.to, e.from)) loops.push({ from: e.from, to: e.to, label: e.label || '', line: e.line });
+      else layout.push(line);
+    }
     const cls = { start: [], end: [], decision: [] };
     nodes.forEach(n => cls[n.shape] && cls[n.shape].push(n.id));
-    if (cls.start.length) out.push('    class ' + cls.start.join(',') + ' fcStart');
-    if (cls.end.length) out.push('    class ' + cls.end.join(',') + ' fcEnd');
-    out.push('    classDef fcStart stroke:#10b981,stroke-width:2px', '    classDef fcEnd stroke:#f43f5e,stroke-width:2px');
+    const tail = [];
+    if (cls.start.length) tail.push('    class ' + cls.start.join(',') + ' fcStart');
+    if (cls.end.length) tail.push('    class ' + cls.end.join(',') + ' fcEnd');
+    tail.push('    classDef fcStart stroke:#10b981,stroke-width:2px', '    classDef fcEnd stroke:#f43f5e,stroke-width:2px');
+    out.push(...tail); layout.push(...tail);
 
     const lineOf = {}; nodes.forEach(n => { lineOf[n.id] = n.line; });
-    return { ok: !issues.some(i => i.level === 'error'), code: out.join('\n'), issues, nodes, edges, lineOf, stepNames: nodes.map(n => n.text) };
+    return { ok: !issues.some(i => i.level === 'error'), code: out.join('\n'), layoutCode: layout.join('\n'), loops, rtl: !!opts.rtl, issues, nodes, edges, lineOf, stepNames: nodes.map(n => n.text) };
   }
 
-  return { compile, classify, DIRS, KW, similarity };
+  /** Share of Hebrew letters among all letters (0..1) – used for automatic right-to-left. */
+  function hebrewRatio(text) {
+    const he = (String(text).match(/[\u0590-\u05FF]/g) || []).length, lat = (String(text).match(/[A-Za-z]/g) || []).length;
+    return he + lat ? he / (he + lat) : 0;
+  }
+  return { compile, classify, DIRS, KW, similarity, hebrewRatio };
+})();
+
+</script>
+<script>/* =====================================================================
+   Arrows – tidy routing for loop ("go back") arrows in flowcharts.
+
+   Rules (feedback v2.2: "return arrows start from the top and end next to another arrow"):
+     • a loop arrow leaves its box from the downstream side (the bottom in a top-to-bottom flow);
+       a decision that already has other answers leaves from its side corner instead
+     • it runs along its own lane beside the diagram (the side that crosses fewest shapes,
+       ties → right, or left in a right-to-left document)
+     • it enters the target box from that side – never on top of the arrow that already comes in
+     • several loops get separate lanes (shorter loops inside) and separate entry points
+   Works in flow coordinates (u = along the flow, v = across), so TD / BT / LR / RL all use one router.
+   Two entry points:
+     drawLoops(svg, loops, opts)  – simple mode: loops were left out of the Mermaid layout; draw them here
+     fixBackEdges(svg, opts)      – Mermaid mode: re-route existing arrows that point upstream
+   ===================================================================== */
+const Arrows = (() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const GAP = 16, LANE = 20, STEP = 16, R = 8, TIP = 4;
+
+  function flowDir(code) {
+    const m = /^\s*(?:flowchart|graph)\s+(TB|TD|BT|LR|RL)\b/im.exec(code || '');
+    return m ? (m[1].toUpperCase() === 'TB' ? 'TD' : m[1].toUpperCase()) : null;
+  }
+  const AX = {
+    TD: { f: (x, y) => [y, x], r: (u, v) => [v, u] },
+    BT: { f: (x, y) => [-y, x], r: (u, v) => [v, -u] },
+    LR: { f: (x, y) => [x, y], r: (u, v) => [u, v] },
+    RL: { f: (x, y) => [-x, y], r: (u, v) => [-u, v] }
+  };
+
+  function absMatrix(el, svg) {
+    let m = svg.createSVGMatrix();
+    for (let e = el; e && e !== svg && e.nodeType === 1; e = e.parentNode) {
+      const tl = e.transform && e.transform.baseVal;
+      if (tl && tl.numberOfItems) { const c = tl.consolidate(); if (c) m = c.matrix.multiply(m); }
+    }
+    return m;
+  }
+  const apply = (m, x, y) => ({ x: m.a * x + m.c * y + m.e, y: m.b * x + m.d * y + m.f });
+
+  /** Box of an element in root coordinates, then in flow coordinates. */
+  function rootBox(el, svg) {
+    let b; try { b = el.getBBox(); } catch { return null; }
+    if (!b || (!b.width && !b.height)) return null;
+    const m = absMatrix(el, svg), p = [apply(m, b.x, b.y), apply(m, b.x + b.width, b.y + b.height)];
+    return { x1: Math.min(p[0].x, p[1].x), y1: Math.min(p[0].y, p[1].y), x2: Math.max(p[0].x, p[1].x), y2: Math.max(p[0].y, p[1].y) };
+  }
+  function flowBox(rb, ax) {
+    const a = ax.f(rb.x1, rb.y1), b = ax.f(rb.x2, rb.y2);
+    const u1 = Math.min(a[0], b[0]), u2 = Math.max(a[0], b[0]), v1 = Math.min(a[1], b[1]), v2 = Math.max(a[1], b[1]);
+    return { u1, u2, v1, v2, uc: (u1 + u2) / 2, vc: (v1 + v2) / 2 };
+  }
+
+  function collect(svg, ax) {
+    const nodes = new Map();
+    svg.querySelectorAll('g.node').forEach(g => {
+      const m = /^flowchart-(.+)-\d+$/.exec(g.id || ''); if (!m) return;
+      const shape = g.querySelector(':scope > rect, :scope > polygon, :scope > path, :scope > circle, :scope > ellipse, :scope > g > rect, :scope > g > path') || g;
+      const rb = rootBox(shape, svg) || rootBox(g, svg); if (!rb) return;
+      const poly = g.querySelector(':scope > polygon');
+      const diamond = !!(poly && poly.points && poly.points.numberOfItems === 4);
+      nodes.set(m[1], { id: m[1], el: g, rb, fb: flowBox(rb, ax), diamond });
+    });
+    const clusters = [...svg.querySelectorAll('g.cluster')].map(c => {
+      const r = c.querySelector(':scope > rect'); const rb = r && rootBox(r, svg);
+      return rb ? { el: c, rect: r, rb, fb: flowBox(rb, ax) } : null;
+    }).filter(Boolean);
+    return { nodes, clusters };
+  }
+
+  const inside = (fb, c) => fb.u1 >= c.u1 - 0.5 && fb.u2 <= c.u2 + 0.5 && fb.v1 >= c.v1 - 0.5 && fb.v2 <= c.v2 + 0.5;
+  const overlapU = (fb, a, b) => fb.u2 > a && fb.u1 < b;
+
+  /** Route one loop; returns flow-coordinate points + label anchor. */
+  function route(L, ctx, side) {
+    const S = L.s.fb, T = L.t.fb, s = side;
+    const pts = [];
+    let startU, firstV;
+    const sideExit = L.s.diamond && L.otherOut;
+    if (sideExit) {                       // decision with other answers → leave from its side corner
+      const vS = s > 0 ? S.v2 : S.v1; pts.push([S.uc, vS]); startU = S.uc; firstV = vS;
+    } else {                              // leave from the downstream side, nudged toward the lane if the box has other exits
+      const ve = S.vc + (L.otherOut ? s * (S.v2 - S.v1) / 4 : 0);
+      const uExit = S.u2 + Math.min(GAP, Math.max(8, (L.gapBelow || GAP) / 2));
+      pts.push([S.u2, ve], [uExit, ve]); startU = uExit; firstV = ve;
+    }
+    // entry point on the target's side, spread when several loops enter the same side
+    const half = (T.u2 - T.u1) / 2, k = L.entryIndex || 0, n = L.entryCount || 1;
+    const spread = Math.min(12, (half * 1.6) / Math.max(1, n));
+    const du = (k - (n - 1) / 2) * spread;
+    const uIn = T.uc + du;
+    let vIn = s > 0 ? T.v2 : T.v1;
+    if (L.t.diamond) { const hw = (T.v2 - T.v1) / 2; vIn = T.vc + s * hw * (1 - Math.min(1, Math.abs(du) / Math.max(1, half))); }
+    // lane: beyond every obstacle overlapping the u-range of the loop, and beyond inner lanes
+    const ua = Math.min(uIn, startU) - 4, ub = Math.max(uIn, startU, S.u2) + 4;
+    let lane = s > 0 ? Math.max(S.v2, T.v2) : Math.min(S.v1, T.v1);
+    for (const o of ctx.obstacles(L)) if (overlapU(o, ua, ub)) lane = s > 0 ? Math.max(lane, o.v2) : Math.min(lane, o.v1);
+    lane += s * LANE;
+    for (const l of ctx.lanes) if (l.s === s && l.ub > ua && l.ua < ub) lane = s > 0 ? Math.max(lane, l.v + STEP + l.extra) : Math.min(lane, l.v - STEP - l.extra);
+    lane += s * (L.labelHalf || 0);
+    pts.push([startU, lane], [uIn, lane], [uIn, vIn + s * TIP]); // stop just outside the shape; the arrowhead reaches its edge
+    // drop duplicate / collinear points
+    const out = [];
+    for (const p of pts) {
+      const q = out[out.length - 1]; if (q && Math.abs(q[0] - p[0]) < 0.01 && Math.abs(q[1] - p[1]) < 0.01) continue;
+      out.push(p);
+    }
+    ctx.lanes.push({ s, v: lane, ua, ub, extra: L.labelHalf || 0 });
+    return { pts: out, lane, labelAt: [(startU + uIn) / 2, lane], ua, ub, firstV, vIn, uIn };
+  }
+
+  /** How many shapes the horizontal legs would cut through on this side (lower = better). */
+  function crossings(L, ctx, side) {
+    const S = L.s.fb, T = L.t.fb; let c = 0;
+    const legs = [[T.uc, side > 0 ? T.v2 : -1e9, side > 0 ? 1e9 : T.v1]];
+    if (L.s.diamond && L.otherOut) legs.push([S.uc, side > 0 ? S.v2 : -1e9, side > 0 ? 1e9 : S.v1]);
+    for (const o of ctx.all) {
+      if (o === S || o === T) continue;
+      for (const [u, a, b] of legs) if (o.u1 < u && o.u2 > u && o.v2 > a && o.v1 < b) c++;
+    }
+    return c;
+  }
+
+  function pathD(points, ax, inv) {
+    const P = points.map(([u, v]) => { const [x, y] = ax.r(u, v); return apply(inv, x, y); });
+    let d = `M${P[0].x.toFixed(2)},${P[0].y.toFixed(2)}`;
+    for (let i = 1; i < P.length; i++) {
+      const a = P[i - 1], b = P[i], c = P[i + 1];
+      if (!c) { d += ` L${b.x.toFixed(2)},${b.y.toFixed(2)}`; break; }
+      const l1 = Math.hypot(b.x - a.x, b.y - a.y), l2 = Math.hypot(c.x - b.x, c.y - b.y), r = Math.min(R, l1 / 2, l2 / 2);
+      const p1 = { x: b.x - (b.x - a.x) / (l1 || 1) * r, y: b.y - (b.y - a.y) / (l1 || 1) * r };
+      const p2 = { x: b.x + (c.x - b.x) / (l2 || 1) * r, y: b.y + (c.y - b.y) / (l2 || 1) * r };
+      d += ` L${p1.x.toFixed(2)},${p1.y.toFixed(2)} Q${b.x.toFixed(2)},${b.y.toFixed(2)} ${p2.x.toFixed(2)},${p2.y.toFixed(2)}`;
+    }
+    return d;
+  }
+
+  function wrapText(text, maxLen) {
+    const words = String(text).split(/\s+/); const lines = []; let cur = '';
+    for (const w of words) { if (cur && (cur + ' ' + w).length > maxLen) { lines.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w; }
+    if (cur) lines.push(cur); return lines;
+  }
+
+  /** Make an edge label shaped like Mermaid's (g.edgeLabel > g.label > rect + text). */
+  function makeLabel(svg, text) {
+    const g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'edgeLabel fc-loop-label');
+    const inner = document.createElementNS(NS, 'g'); inner.setAttribute('class', 'label');
+    const rect = document.createElementNS(NS, 'rect'); rect.setAttribute('rx', '0'); rect.setAttribute('ry', '0');
+    const tx = document.createElementNS(NS, 'text');
+    wrapText(text, 18).forEach((line, i) => {
+      const ts = document.createElementNS(NS, 'tspan'); ts.setAttribute('class', 'row'); ts.setAttribute('x', '0');
+      ts.setAttribute('dy', i ? '1.1em' : '1em'); ts.setAttribute('xml:space', 'preserve'); ts.textContent = line; tx.appendChild(ts);
+    });
+    inner.appendChild(rect); inner.appendChild(tx); g.appendChild(inner);
+    return { g, inner, rect, tx };
+  }
+
+  function layerOf(svg, cls) {
+    const root = svg.querySelector(':scope > g') || svg;
+    let layer = root.querySelector(`:scope > g.${cls}`);
+    if (!layer) { layer = document.createElementNS(NS, 'g'); layer.setAttribute('class', cls); root.appendChild(layer); }
+    return layer;
+  }
+
+  /** Shared driver. items: [{from, to, label, path?, labelEl?}] */
+  function layout(svg, items, opts) {
+    const dir = opts.dir || 'TD', ax = AX[dir] || AX.TD;
+    const { nodes, clusters } = collect(svg, ax);
+    const loops = items.map(it => ({ ...it, s: nodes.get(it.from), t: nodes.get(it.to) })).filter(L => L.s && L.t);
+    if (!loops.length) return 0;
+    const all = [...nodes.values()].map(n => n.fb);
+    let vMin = Infinity, vMax = -Infinity; all.forEach(b => { vMin = Math.min(vMin, b.v1); vMax = Math.max(vMax, b.v2); });
+    const vMid = (vMin + vMax) / 2, pref = opts.rtl ? (dir === 'TD' || dir === 'BT' ? -1 : 1) : 1;
+    const outCount = new Map(); (opts.edges || []).forEach(e => outCount.set(e.from, (outCount.get(e.from) || 0) + 1));
+    const ctx = {
+      all, lanes: [],
+      obstacles(L) {
+        const out = all.slice();
+        for (const c of clusters) if (!(inside(L.s.fb, c.fb) && inside(L.t.fb, c.fb))) out.push(c.fb);
+        return out;
+      }
+    };
+    // label sizes first (needed to space lanes)
+    const labelLayer = layerOf(svg, 'edgeLabels');
+    for (const L of loops) {
+      if (!L.label) continue;
+      if (L.labelEl) { L.lab = { g: L.labelEl }; } else { L.lab = makeLabel(svg, L.label); labelLayer.appendChild(L.lab.g); }
+      const b = rootBox(L.lab.g, svg) || { x1: 0, y1: 0, x2: 0, y2: 0 };
+      const w = b.x2 - b.x1, h = b.y2 - b.y1;
+      if (L.lab.rect) { const tb = L.lab.tx.getBBox(); L.lab.rect.setAttribute('width', tb.width + 4); L.lab.rect.setAttribute('height', tb.height + 2); L.lab.rect.setAttribute('x', -2); L.lab.rect.setAttribute('y', tb.y - 1); L.lab.w = tb.width + 4; L.lab.h = tb.height + 2; L.lab.ty = tb.y - 1; }
+      else { L.lab.w = w; L.lab.h = h; }
+      L.labelHalf = ((dir === 'TD' || dir === 'BT') ? L.lab.w : L.lab.h) / 2;
+    }
+    // side, entry slots, gap under the source
+    for (const L of loops) {
+      L.otherOut = (outCount.get(L.from) || 0) > 0;
+      const c1 = crossings(L, ctx, 1), c2 = crossings(L, ctx, -1);
+      const near = Math.sign(((L.s.fb.vc + L.t.fb.vc) / 2) - vMid);
+      L.side = c1 !== c2 ? (c1 < c2 ? 1 : -1) : (near || pref);
+      if (Math.abs(((L.s.fb.vc + L.t.fb.vc) / 2) - vMid) < 4 && c1 === c2) L.side = pref;
+      let gap = Infinity; for (const o of all) if (o !== L.s.fb && o.u1 >= L.s.fb.u2 && o.v2 > L.s.fb.v1 && o.v1 < L.s.fb.v2) gap = Math.min(gap, o.u1 - L.s.fb.u2);
+      L.gapBelow = isFinite(gap) ? gap : GAP * 2;
+    }
+    const groups = new Map();
+    for (const L of loops) { const k = L.to + '|' + L.side; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(L); }
+    for (const g of groups.values()) { g.sort((a, b) => a.s.fb.uc - b.s.fb.uc); g.forEach((L, i) => { L.entryIndex = i; L.entryCount = g.length; }); }
+    // inner (short) loops first so outer loops wrap around them
+    loops.sort((a, b) => Math.abs(a.s.fb.u2 - a.t.fb.uc) - Math.abs(b.s.fb.u2 - b.t.fb.uc));
+    const pathLayer = layerOf(svg, 'edgePaths');
+    const template = svg.querySelector('.edgePaths path.flowchart-link');
+    const marker = svg.querySelector('marker[id$="flowchart-pointEnd"]');
+    for (const L of loops) {
+      const r = route(L, ctx, L.side);
+      let p = L.path;
+      if (!p) {
+        p = document.createElementNS(NS, 'path');
+        p.setAttribute('class', 'edge-thickness-normal edge-pattern-dotted flowchart-link fc-loop LS-' + L.from + ' LE-' + L.to);
+        p.setAttribute('id', 'L-loop-' + L.from + '-' + L.to + '-' + Math.random().toString(36).slice(2, 6));
+        const me = (template && template.getAttribute('marker-end')) || (marker ? `url(#${marker.id})` : null);
+        if (me) p.setAttribute('marker-end', me);
+        p.setAttribute('style', 'fill:none;');
+        pathLayer.appendChild(p);
+      } else p.classList.add('fc-loop');
+      p.setAttribute('d', pathD(r.pts, ax, absMatrix(p.parentNode, svg).inverse()));
+      p.setAttribute('data-fc-route', 'lane');
+      if (L.lab) {
+        const [x, y] = ax.r(r.labelAt[0], r.labelAt[1]);
+        const inv = absMatrix(L.lab.g.parentNode, svg).inverse(), q = apply(inv, x, y);
+        L.lab.g.setAttribute('transform', `translate(${q.x.toFixed(2)}, ${q.y.toFixed(2)})`);
+        const inner = L.lab.inner || L.lab.g.querySelector(':scope > g.label');
+        if (inner) {
+          const w = L.lab.w != null ? L.lab.w : inner.getBBox().width, h = L.lab.h != null ? L.lab.h : inner.getBBox().height;
+          const y0 = L.lab.ty != null ? L.lab.ty : 0;
+          inner.setAttribute('transform', `translate(${(-w / 2 + (L.lab.rect ? 2 : 0)).toFixed(2)}, ${(-h / 2 - y0).toFixed(2)})`);
+        }
+      }
+      // a loop inside a group (swim lane) must stay inside it: widen the group box if needed
+      for (const c of clusters) {
+        if (!(inside(L.s.fb, c.fb) && inside(L.t.fb, c.fb))) continue;
+        const need = r.lane + L.side * ((L.labelHalf || 0) + 10);
+        if (L.side > 0 && need > c.fb.v2) grow(c, ax, svg, 0, need - c.fb.v2);
+        if (L.side < 0 && need < c.fb.v1) grow(c, ax, svg, c.fb.v1 - need, 0);
+      }
+    }
+    fitViewBox(svg);
+    return loops.length;
+  }
+
+  /** Extend a cluster rect across the flow (v) by `lo` on the low side and `hi` on the high side. */
+  function grow(c, ax, svg, lo, hi) {
+    const fb = c.fb; fb.v1 -= lo; fb.v2 += hi;
+    const a = ax.r(fb.u1, fb.v1), b = ax.r(fb.u2, fb.v2);
+    const inv = absMatrix(c.rect, svg).inverse();
+    const p = apply(inv, Math.min(a[0], b[0]), Math.min(a[1], b[1])), q = apply(inv, Math.max(a[0], b[0]), Math.max(a[1], b[1]));
+    c.rect.setAttribute('x', Math.min(p.x, q.x)); c.rect.setAttribute('y', Math.min(p.y, q.y));
+    c.rect.setAttribute('width', Math.abs(q.x - p.x)); c.rect.setAttribute('height', Math.abs(q.y - p.y));
+  }
+
+  function fitViewBox(svg) {
+    const root = svg.querySelector(':scope > g'); if (!root) return;
+    let b; try { b = root.getBBox(); } catch { return; }
+    const m = absMatrix(root, svg), p = apply(m, b.x, b.y), q = apply(m, b.x + b.width, b.y + b.height);
+    const vb = svg.viewBox.baseVal;
+    const x1 = Math.min(vb.x, p.x - 8), y1 = Math.min(vb.y, p.y - 8), x2 = Math.max(vb.x + vb.width, q.x + 8), y2 = Math.max(vb.y + vb.height, q.y + 8);
+    svg.setAttribute('viewBox', `${x1} ${y1} ${x2 - x1} ${y2 - y1}`);
+    svg.setAttribute('width', (x2 - x1).toFixed(2)); svg.setAttribute('height', (y2 - y1).toFixed(2));
+  }
+
+  /** Simple mode: draw loops that were left out of the layout. */
+  function drawLoops(svg, loops, opts = {}) {
+    if (!loops || !loops.length) return 0;
+    return layout(svg, loops.map(l => ({ from: l.from, to: l.to, label: l.label || '' })), opts);
+  }
+
+  /** Mermaid mode: re-route existing edges whose target lies upstream of the source. */
+  function fixBackEdges(svg, opts = {}) {
+    const dir = opts.dir || 'TD', ax = AX[dir] || AX.TD;
+    const { nodes } = collect(svg, ax);
+    const paths = [...svg.querySelectorAll('.edgePaths path.flowchart-link')];
+    const edges = paths.map(p => {
+      const cls = p.getAttribute('class') || '', a = /\bLS-(\S+)/.exec(cls), b = /\bLE-(\S+)/.exec(cls);
+      return a && b ? { p, from: a[1], to: b[1] } : null;
+    }).filter(Boolean);
+    const back = edges.filter(e => { const s = nodes.get(e.from), t = nodes.get(e.to); return s && t && (e.from === e.to || t.fb.uc < s.fb.uc - 2); });
+    if (!back.length) return 0;
+    const labels = [...svg.querySelectorAll('.edgeLabels .edgeLabel')].filter(l => l.textContent.trim());
+    const used = new Set();
+    const items = back.map(e => {
+      let labelEl = null, best = 30;
+      try {
+        const len = e.p.getTotalLength(), mid = e.p.getPointAtLength(len / 2), m = absMatrix(e.p, svg), pm = apply(m, mid.x, mid.y);
+        for (const l of labels) { if (used.has(l)) continue; const b = rootBox(l, svg); if (!b) continue;
+          const d = Math.hypot((b.x1 + b.x2) / 2 - pm.x, (b.y1 + b.y2) / 2 - pm.y); if (d < best) { best = d; labelEl = l; } }
+      } catch {}
+      if (labelEl) used.add(labelEl);
+      return { from: e.from, to: e.to, path: e.p, labelEl, label: labelEl ? labelEl.textContent.trim() : '' };
+    });
+    const backSet = new Set(back.map(e => e.p));
+    const fwd = edges.filter(e => !backSet.has(e.p)).map(e => ({ from: e.from, to: e.to }));
+    return layout(svg, items, { ...opts, edges: fwd });
+  }
+
+  return { flowDir, drawLoops, fixBackEdges, wrapText };
+})();
+
+</script>
+<script>/* =====================================================================
+   LiveOT – text operations + the client state machine for editing together.
+   Same rules as server.py: an operation is a list; positive int = keep n characters,
+   negative int = delete n, string = insert. Lengths are JavaScript string lengths (UTF-16).
+   Client states (classic OT, as in Google Wave / ot.js):
+     synced → (local edit) → waiting for ack → (more local edits) → waiting + buffer
+   Remote operations are transformed against what is still unacknowledged, so every editor
+   converges on exactly the same text.
+   ===================================================================== */
+const LiveOT = (() => {
+  const isR = (c) => typeof c === 'number' && c > 0, isD = (c) => typeof c === 'number' && c < 0, isI = (c) => typeof c === 'string';
+
+  class Op {
+    constructor(ops) { this.ops = []; if (ops) for (const c of ops) { if (isR(c)) this.retain(c); else if (isD(c)) this.delete(-c); else if (isI(c)) this.insert(c); } }
+    retain(n) { if (n <= 0) return this; const o = this.ops, l = o[o.length - 1]; if (isR(l)) o[o.length - 1] += n; else o.push(n); return this; }
+    insert(s) {
+      if (!s) return this; const o = this.ops, l = o[o.length - 1];
+      if (isI(l)) o[o.length - 1] += s;
+      else if (isD(l)) { if (isI(o[o.length - 2])) o[o.length - 2] += s; else { o.push(l); o[o.length - 2] = s; } }
+      else o.push(s);
+      return this;
+    }
+    delete(n) { if (n <= 0) return this; const o = this.ops, l = o[o.length - 1]; if (isD(l)) o[o.length - 1] -= n; else o.push(-n); return this; }
+    get baseLength() { return this.ops.reduce((a, c) => a + (isI(c) ? 0 : Math.abs(c)), 0); }
+    get targetLength() { return this.ops.reduce((a, c) => a + (isI(c) ? c.length : isR(c) ? c : 0), 0); }
+    isNoop() { return this.ops.length === 0 || (this.ops.length === 1 && isR(this.ops[0])); }
+    apply(str) {
+      if (str.length !== this.baseLength) throw new Error('operation does not match the text length');
+      let out = '', i = 0;
+      for (const c of this.ops) { if (isR(c)) { out += str.slice(i, i + c); i += c; } else if (isI(c)) out += c; else i -= c; }
+      return out;
+    }
+    /** Where does position `pos` end up after this operation? (own = keep caret before inserts at the same place) */
+    transformIndex(pos, own) {
+      let i = 0, out = pos;
+      for (const c of this.ops) {
+        if (i > pos) break;
+        if (isR(c)) i += c;
+        else if (isI(c)) { if (i < pos || (i === pos && !own)) out += c.length; }
+        else { const d = -c; out -= Math.min(d, pos - i); i += d; }
+      }
+      return Math.max(0, out);
+    }
+    /** this then b → one operation */
+    compose(b) {
+      const a = this; if (a.targetLength !== b.baseLength) throw new Error('compose: length mismatch');
+      const res = new Op(), A = a.ops.slice(), B = b.ops.slice();
+      let i = 0, j = 0, o1 = A[i++], o2 = B[j++];
+      for (;;) {
+        if (o1 === undefined && o2 === undefined) break;
+        if (isD(o1)) { res.delete(-o1); o1 = A[i++]; continue; }
+        if (isI(o2)) { res.insert(o2); o2 = B[j++]; continue; }
+        if (o1 === undefined || o2 === undefined) throw new Error('compose: operations do not line up');
+        if (isR(o1) && isR(o2)) { if (o1 > o2) { res.retain(o2); o1 -= o2; o2 = B[j++]; } else if (o1 === o2) { res.retain(o1); o1 = A[i++]; o2 = B[j++]; } else { res.retain(o1); o2 -= o1; o1 = A[i++]; } }
+        else if (isI(o1) && isD(o2)) { if (o1.length > -o2) { o1 = o1.slice(-o2); o2 = B[j++]; } else if (o1.length === -o2) { o1 = A[i++]; o2 = B[j++]; } else { o2 += o1.length; o1 = A[i++]; } }
+        else if (isI(o1) && isR(o2)) { if (o1.length > o2) { res.insert(o1.slice(0, o2)); o1 = o1.slice(o2); o2 = B[j++]; } else if (o1.length === o2) { res.insert(o1); o1 = A[i++]; o2 = B[j++]; } else { res.insert(o1); o2 -= o1.length; o1 = A[i++]; } }
+        else if (isR(o1) && isD(o2)) { if (o1 > -o2) { res.delete(-o2); o1 += o2; o2 = B[j++]; } else if (o1 === -o2) { res.delete(-o2); o1 = A[i++]; o2 = B[j++]; } else { res.delete(o1); o2 += o1; o1 = A[i++]; } }
+        else throw new Error('compose: unexpected components');
+      }
+      return res;
+    }
+    static transform(a, b) {
+      if (a.baseLength !== b.baseLength) throw new Error('transform: length mismatch');
+      const ap = new Op(), bp = new Op(), A = a.ops, B = b.ops;
+      let i = 0, j = 0, o1 = A[i++], o2 = B[j++];
+      for (;;) {
+        if (o1 === undefined && o2 === undefined) break;
+        if (isI(o1)) { ap.insert(o1); bp.retain(o1.length); o1 = A[i++]; continue; }
+        if (isI(o2)) { ap.retain(o2.length); bp.insert(o2); o2 = B[j++]; continue; }
+        if (o1 === undefined || o2 === undefined) throw new Error('transform: operations do not line up');
+        let m;
+        if (isR(o1) && isR(o2)) { if (o1 > o2) { m = o2; o1 -= o2; o2 = B[j++]; } else if (o1 === o2) { m = o2; o1 = A[i++]; o2 = B[j++]; } else { m = o1; o2 -= o1; o1 = A[i++]; } ap.retain(m); bp.retain(m); }
+        else if (isD(o1) && isD(o2)) { if (-o1 > -o2) { o1 -= o2; o2 = B[j++]; } else if (o1 === o2) { o1 = A[i++]; o2 = B[j++]; } else { o2 -= o1; o1 = A[i++]; } }
+        else if (isD(o1) && isR(o2)) { if (-o1 > o2) { m = o2; o1 += o2; o2 = B[j++]; } else if (-o1 === o2) { m = o2; o1 = A[i++]; o2 = B[j++]; } else { m = -o1; o2 += o1; o1 = A[i++]; } ap.delete(m); }
+        else { if (o1 > -o2) { m = -o2; o1 += o2; o2 = B[j++]; } else if (o1 === -o2) { m = o1; o1 = A[i++]; o2 = B[j++]; } else { m = o1; o2 += o1; o1 = A[i++]; } bp.delete(m); }
+      }
+      return [ap, bp];
+    }
+    /** Smallest operation that turns `a` into `b` (one changed region; `hint` = caret after the edit helps with repeated letters). */
+    static fromDiff(a, b, hint) {
+      if (a === b) return new Op().retain(a.length);
+      let p = 0; const max = Math.min(a.length, b.length);
+      while (p < max && a.charCodeAt(p) === b.charCodeAt(p)) p++;
+      let s = 0;
+      while (s < max - p && a.charCodeAt(a.length - 1 - s) === b.charCodeAt(b.length - 1 - s)) s++;
+      // when typing a repeated letter the change is ambiguous – prefer the region that ends at the caret
+      if (typeof hint === 'number' && b.length > a.length) { const ins = b.length - a.length; if (hint - ins >= 0 && hint - ins < p) { const shift = p - (hint - ins); if (shift <= s + p && a.slice(hint - ins, p) === b.slice(hint, p + ins)) { s += shift; p -= shift; } } }
+      return new Op().retain(p).delete(a.length - p - s).insert(b.slice(p, b.length - s)).retain(s);
+    }
+  }
+
+  /** OT client. send(rev, op) must post the op; applyRemote(op) must apply it to the editor. */
+  class Client {
+    constructor(rev, { send, applyRemote }) { this.rev = rev; this.state = 'synced'; this.out = null; this.buf = null; this.send = send; this.applyRemote = applyRemote; }
+    local(op) {
+      if (op.isNoop()) return;
+      if (this.state === 'synced') { this.out = op; this.state = 'waiting'; this.send(this.rev, op); }
+      else if (this.state === 'waiting') { this.buf = op; this.state = 'buffer'; }
+      else this.buf = this.buf.compose(op);
+    }
+    /** One operation from the server's history, in order. mine = it was ours (= acknowledgement). */
+    server(op, mine) {
+      this.rev++;
+      if (mine) {
+        if (this.state === 'waiting') { this.out = null; this.state = 'synced'; }
+        else if (this.state === 'buffer') { this.out = this.buf; this.buf = null; this.state = 'waiting'; this.send(this.rev, this.out); }
+        return;
+      }
+      if (this.state === 'synced') { this.applyRemote(op); return; }
+      const [o2, op2] = Op.transform(this.out, op); this.out = o2;
+      if (this.state === 'waiting') { this.applyRemote(op2); return; }
+      const [b2, op3] = Op.transform(this.buf, op2); this.buf = b2; this.applyRemote(op3);
+    }
+    /** The op that is in flight must be re-sent (e.g. after a network error) – same revision, same op. */
+    resend() { if (this.state !== 'synced' && this.out) this.send(this.rev, this.out); }
+    get pending() { return this.state !== 'synced'; }
+    /** Transform a caret position through everything not yet confirmed (for presence). */
+  }
+  return { Op, Client };
 })();
 
 </script>
@@ -3019,7 +3492,7 @@ window.__fccAppScript = true;
    Sections: config · i18n · utils · storage · validation · editor ·
              render · view · export · files · network · review · UI · tests · app
    ===================================================================== */
-const APP_VERSION = '2.2.2';
+const APP_VERSION = '2.3.0', BUILD_DATE = '2026-11-10', MERMAID_VERSION = '10.9.3', JSPDF_VERSION = '2.5.2';
 const LS_PREFIX = 'fcc.v2.';
 const LIMITS = { codeChars: 200000, nameChars: 80, projectBytes: 5e6, maxDim: 16000, maxArea: 120e6, history: 20, snapshotGapMs: 120000 };
 const THEMES = ['dark', 'default', 'forest', 'neutral'];
@@ -3038,6 +3511,19 @@ const I18N = {
   insStep:'Step', insQ:'Question', insGoto:'Go back to…', insData:'Data', insEnd:'End', insGroup:'Group',
   insStepHint:'Add a step on the next line', insQHint:'Add a yes/no question with two answers', insGotoHint:'Loop back (or jump) to a step that already exists',
   insDataHint:'Add a database / storage step', insEndHint:'End the flow here', insGroupHint:'Start a group (swim lane), e.g. a department',
+  liveBanner:'Editing together – everyone sees changes as they type.', liveReconnecting:'Connection lost – reconnecting… your changes are kept.', liveYou:'you',
+  liveLeave:'Leave', liveCopyLink:'Copy link', livePeople:'{n} editing', liveNameTitle:'Edit together', liveNamePrompt:'Your name (the other editors will see it):',
+  liveJoinFail:'Could not join live editing: {e}', liveJoined:'You are editing together. Changes are saved on the server automatically.', liveNeedServer:'Open the link that start_server shows (http://…), not the file.',
+  liveRejoined:'Reconnected.', liveRejoinedSent:'Reconnected – your changes made while offline were sent.', liveRejoinedLost:'Reconnected. The server copy was loaded; your last unsent change is in History (Library → History).',
+  liveNoMode:'Switching between simple text and Mermaid is not available while editing together.', liveViewLink:'Review link (view only)', liveEditLink:'Edit-together link (everyone can type)',
+  liveStartNow:'Start editing together', liveLib:'Edit together', liveShareNote:'Everyone who opens the edit-together link types in the same diagram at the same time; each editor gets a colour, and their line is marked in the line numbers.',
+  about:'About', aboutTitle:'About FlowChartCreation', aboutTagline:'Workflow diagrams from plain text – offline, Hebrew and English',
+  aboutDesc:'Write a process in plain text, one step per line, and the diagram draws itself. Export to PNG, PDF or SVG, keep a library with version history, and share or edit together on your local network. Everything runs inside this one file – no installation and no internet needed.',
+  aboutVersion:'Version', aboutCreator:'Created by', aboutOrg:'Organization', aboutEmail:'Contact', aboutLibs:'Built with', aboutMode:'Running',
+  aboutModeLocal:'from a file on this computer', aboutModeServer:'from the network server ({h})', aboutNotSet:'not set yet',
+  aboutHowEdit:'To fill in the creator and contact: open <code>FlowChartCreation.html</code> in Notepad, find <b>ABOUT – EDIT HERE</b> near the top, type the details between the quotes, save (UTF-8), then run <code>update_checksums.bat</code>.',
+  aboutVerify:'To check that the files are intact, run verify_files.bat (Windows) or verify_files.sh (Mac/Linux).',
+  textDirHint:'Writing direction: automatic (Hebrew → right-to-left), right-to-left or left-to-right. Affects the editor and the diagram.', textDir_auto:'⇄ Auto', textDir_rtl:'⇠ RTL', textDir_ltr:'⇢ LTR',
   dirHint:'Direction of the flow', dirTD:'↓ Top to bottom', dirLR:'→ Left to right', dirRL:'← Right to left', dirBT:'↑ Bottom to top',
   guide:'Guide', guideTitle:'How to write a workflow',
   snipStep:'New step', snipQ:'Question?\n  Yes: \n  No: ', snipQSel:'Question', snipEnd:'end: Done', snipEndSel:'Done', snipData:'data: Database', snipDataSel:'Database', snipGroup:'# Group name', snipGroupSel:'Group name',
@@ -3101,6 +3587,19 @@ const I18N = {
   insStep:'שלב', insQ:'שאלה', insGoto:'חזרה אל…', insData:'נתונים', insEnd:'סיום', insGroup:'קבוצה',
   insStepHint:'הוספת שלב בשורה הבאה', insQHint:'הוספת שאלת כן/לא עם שתי תשובות', insGotoHint:'חזרה (או קפיצה) לשלב שכבר קיים',
   insDataHint:'הוספת שלב מסד נתונים / אחסון', insEndHint:'סיום התהליך כאן', insGroupHint:'פתיחת קבוצה (נתיב שחייה), למשל מחלקה',
+  liveBanner:'עריכה משותפת – כולם רואים את השינויים תוך כדי הקלדה.', liveReconnecting:'החיבור נותק – מתחבר מחדש… השינויים שלכם נשמרים.', liveYou:'את/ה',
+  liveLeave:'יציאה', liveCopyLink:'העתקת קישור', livePeople:'{n} עורכים', liveNameTitle:'עריכה משותפת', liveNamePrompt:'השם שלכם (יוצג לעורכים האחרים):',
+  liveJoinFail:'לא ניתן להצטרף לעריכה המשותפת: {e}', liveJoined:'אתם בעריכה משותפת. השינויים נשמרים בשרת אוטומטית.', liveNeedServer:'פתחו את הקישור ש-start_server מציג (http://…), לא את הקובץ.',
+  liveRejoined:'החיבור חודש.', liveRejoinedSent:'החיבור חודש – השינויים שעשיתם בלי חיבור נשלחו.', liveRejoinedLost:'החיבור חודש. נטען העותק מהשרת; השינוי האחרון שלא נשלח שמור בהיסטוריה (ספרייה ← היסטוריה).',
+  liveNoMode:'מעבר בין טקסט פשוט ל-Mermaid אינו זמין בזמן עריכה משותפת.', liveViewLink:'קישור לסקירה (צפייה בלבד)', liveEditLink:'קישור לעריכה משותפת (כולם יכולים להקליד)',
+  liveStartNow:'התחלת עריכה משותפת', liveLib:'עריכה משותפת', liveShareNote:'כל מי שפותח את קישור העריכה המשותפת מקליד באותו תרשים באותו זמן; לכל עורך צבע, והשורה שלו מסומנת במספרי השורות.',
+  about:'אודות', aboutTitle:'אודות FlowChartCreation', aboutTagline:'תרשימי תהליך מטקסט פשוט – בלי אינטרנט, בעברית ובאנגלית',
+  aboutDesc:'כותבים תהליך בטקסט פשוט, שלב בכל שורה, והתרשים מצטייר מעצמו. ייצוא ל-PNG, PDF או SVG, ספרייה עם היסטוריית גרסאות, ושיתוף ועריכה משותפת ברשת המקומית. הכול רץ מתוך הקובץ הזה בלבד – בלי התקנה ובלי אינטרנט.',
+  aboutVersion:'גרסה', aboutCreator:'נוצר על ידי', aboutOrg:'ארגון', aboutEmail:'יצירת קשר', aboutLibs:'נבנה עם', aboutMode:'פועל',
+  aboutModeLocal:'מקובץ במחשב הזה', aboutModeServer:'משרת הרשת ({h})', aboutNotSet:'עדיין לא הוגדר',
+  aboutHowEdit:'כדי למלא יוצר ופרטי קשר: פתחו את <code>FlowChartCreation.html</code> ב-Notepad, חפשו <b>ABOUT – EDIT HERE</b> בראש הקובץ, הקלידו את הפרטים בין המירכאות, שמרו (UTF-8) והריצו את <code>update_checksums.bat</code>.',
+  aboutVerify:'כדי לבדוק שהקבצים תקינים, הריצו את verify_files.bat (ווינדוס) או verify_files.sh (מק/לינוקס).',
+  textDirHint:'כיוון הכתיבה: אוטומטי (עברית ← מימין לשמאל), מימין לשמאל או משמאל לימין. משפיע על העורך ועל התרשים.', textDir_auto:'⇄ אוטומטי', textDir_rtl:'⇠ ימין-שמאל', textDir_ltr:'⇢ שמאל-ימין',
   dirHint:'כיוון הזרימה', dirTD:'↓ מלמעלה למטה', dirLR:'→ משמאל לימין', dirRL:'← מימין לשמאל', dirBT:'↑ מלמטה למעלה',
   guide:'מדריך', guideTitle:'איך כותבים תהליך',
   snipStep:'שלב חדש', snipQ:'שאלה?\n  כן: \n  לא: ', snipQSel:'שאלה', snipEnd:'סוף: הסתיים', snipEndSel:'הסתיים', snipData:'נתונים: מסד נתונים', snipDataSel:'מסד נתונים', snipGroup:'# שם הקבוצה', snipGroupSel:'שם הקבוצה',
@@ -3307,7 +3806,14 @@ const ed = () => $('codeEditor');
 const Model = {
   isSimple(d) { return !!d && d.mode === 'simple'; },
   editorText(d) { return this.isSimple(d) ? (d.src || '') : (d.code || ''); },
-  compile(d) { return Simple.compile(d.src || '', { dir: d.dir }); },
+  compile(d) { return Simple.compile(d.src || '', { dir: d.dir, rtl: this.isRtl(d) }); },
+  /** Right-to-left document? 'auto' = most letters in the workflow text are Hebrew. */
+  isRtl(d) {
+    if (!d) return false;
+    if (d.textDir === 'rtl') return true;
+    if (d.textDir === 'ltr') return false;
+    return Simple.hebrewRatio(this.isSimple(d) ? (d.src || '') : '') > 0.5;
+  },
   /** Pull the editor text into the current doc (and regenerate Mermaid in simple mode). */
   sync() {
     if (!S.doc || S.review) return;
@@ -3318,7 +3824,8 @@ const Model = {
   normalize(d) {
     d.mode = d.mode === 'simple' && typeof d.src === 'string' ? 'simple' : 'mermaid';
     d.dir = Simple.DIRS.includes(d.dir) ? d.dir : 'TD';
-    if (d.mode === 'simple') d.code = Simple.compile(d.src, { dir: d.dir }).code;
+    d.textDir = ['auto', 'rtl', 'ltr'].includes(d.textDir) ? d.textDir : 'auto';
+    if (d.mode === 'simple') d.code = Simple.compile(d.src, { dir: d.dir, rtl: this.isRtl(d) }).code;
     return d;
   },
   typeLabel(d) { return this.isSimple(d) ? (S.lang === 'he' ? 'תהליך' : 'workflow') : Util.detectType(d.code); }
@@ -3482,7 +3989,7 @@ const Valid = {
 const Editor = {
   init() {
     const e = ed();
-    e.addEventListener('input', () => { this.updateMeta(); App.onCodeChanged(); });
+    e.addEventListener('input', () => { Live.onInput(); this.updateMeta(); App.onCodeChanged(); });
     e.addEventListener('scroll', () => { $('gutter').scrollTop = e.scrollTop; });
     e.addEventListener('keydown', (ev) => {
       if (ev.key === 'Enter' && !ev.ctrlKey && !ev.metaKey && !ev.altKey && !ev.shiftKey && !e.readOnly && Model.isSimple(S.doc) && e.selectionStart === e.selectionEnd) {
@@ -3511,11 +4018,15 @@ const Editor = {
     const v = ed().value, n = v.split('\n').length;
     $('charCounter').textContent = `${n} ${t('lines')} · ${v.length.toLocaleString()} ${t('chars')}`;
     const g = $('gutter'); let html = '';
-    const marks = S.lineMarks || {};
-    for (let i = 1; i <= n; i++) html += `<div${marks[i] ? ` class="${marks[i]}line"` : ''}>${i}</div>`;
+    const marks = S.lineMarks || {}, lm = Live.on ? Live.marks() : {};
+    for (let i = 1; i <= n; i++) {
+      const p = lm[i] && lm[i][0];
+      if (p && !marks[i]) html += `<div class="liveline" style="background:${/^#[0-9a-f]{6}$/i.test(p.color) ? p.color : '#888'}" title="${Util.esc(lm[i].map(x => x.name).join(', '))}">${i}</div>`;
+      else html += `<div${marks[i] ? ` class="${marks[i]}line"` : ''}>${i}</div>`;
+    }
     g.innerHTML = html; g.scrollTop = ed().scrollTop;
   },
-  set(code) { ed().value = code; this.updateMeta(); },
+  set(code) { ed().value = code; this.updateMeta(); if (Live.on && !Live.applying) Live.onInput(); },
   /** Insert a snippet on a new line below the caret line, with the right indentation, and select its placeholder. */
   async insert(kind) {
     const e = ed(); if (e.readOnly) return;
@@ -3589,9 +4100,17 @@ const Render = {
     }
   },
   /** Post-process: fix Hebrew bidi in SVG text and record natural size. */
-  finalize(svgEl) {
+  finalize(svgEl, o = {}) {
     svgEl.removeAttribute('style');
     svgEl.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    // tidy loop arrows (simple mode: draw the loops left out of the layout; Mermaid mode: re-route upstream arrows)
+    try {
+      const dir = Arrows.flowDir(o.code || '');
+      if (dir && svgEl.getAttribute('aria-roledescription') === 'flowchart-v2') {
+        if (o.loops) Arrows.drawLoops(svgEl, o.loops, { dir, rtl: !!o.rtl, edges: (o.edges || []).filter(e => !o.loops.some(l => l.from === e.from && l.to === e.to)) });
+        else Arrows.fixBackEdges(svgEl, { dir, rtl: !!o.rtl });
+      }
+    } catch (e) { console.warn('arrow routing skipped:', e); }
     const walker = document.createTreeWalker(svgEl, NodeFilter.SHOW_TEXT);
     const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
     const RLE = '‫', PDF_ = '‬';
@@ -3631,14 +4150,16 @@ const Render = {
     const cv = Valid.code(code); if (!cv.ok) { this.showIssues([{ level: 'error', msg: cv.msg }]); return; }
     this.status('busy');
     try {
-      const svg = await this.toSvg(code, S.doc.theme);
+      const svg = await this.toSvg(simple && comp.layoutCode ? comp.layoutCode : code, S.doc.theme);
       if ((S.doc.code || '') !== code) return; // superseded by newer edits
       out.innerHTML = svg; out.classList.remove('stale', 'isEmpty');
-      const el = out.querySelector('svg'); S.natural = this.finalize(el);
+      const el = out.querySelector('svg');
+      S.natural = this.finalize(el, simple ? { code, loops: comp.loops, edges: comp.edges, rtl: comp.rtl } : { code, rtl: Model.isRtl(S.doc) });
       S.compiledShown = comp; S.lastRenderedCode = code;
       const issues = simple ? this.friendly(comp.issues) : [];
       S.lastRenderOk = !issues.some(i => i.level === 'error');
       this.showIssues(issues); this.status(S.lastRenderOk ? 'ok' : 'warn');
+      if (S.lastRenderOk) Live.rendered();
       if (S.fitOnNextRender) { S.fitOnNextRender = false; View.fit(); } else View.apply();
     } catch (err) {
       if ((S.doc.code || '') !== code) return;
@@ -4029,15 +4550,19 @@ const Net = {
   async publish(force) {
     const d = S.doc, sid = d.sharedId || d.id;
     try {
-      const res = await this.put(sid, { name: d.name, code: d.code, src: d.mode === 'simple' ? d.src : null, mode: d.mode || 'mermaid', dir: d.dir || 'TD', theme: d.theme, bg: d.bg, author: S.settings.author || 'anonymous', base_rev: force ? null : (d.sharedRev ?? null), force: !!force });
+      const res = await this.put(sid, { name: d.name, code: d.code, src: d.mode === 'simple' ? d.src : null, mode: d.mode || 'mermaid', dir: d.dir || 'TD', textDir: d.textDir || 'auto', theme: d.theme, bg: d.bg, author: S.settings.author || 'anonymous', base_rev: force ? null : (d.sharedRev ?? null), force: !!force });
       d.sharedId = sid; d.sharedRev = res.rev; App.saveNow(true);
       // verify round-trip
       const back = await this.get(sid);
       if (back.code !== d.code) throw new Error('verification failed (server copy differs)');
-      const links = this.reviewLinks(sid);
-      UI.dialog({ title: t('shareTitle'), html: `<p style="margin-top:0">${Util.esc(t('shareDone', { r: res.rev }))}</p>` +
-        links.map((l, i) => `<div class="linkrow"><input class="inp" readonly value="${Util.esc(l)}" id="lnk${i}"><button class="btn sm" onclick="UI.copyFrom('lnk${i}')">${t('copy')}</button></div>`).join(''),
-        buttons: [{ label: t('close'), value: null, primary: true }] });
+      const links = this.reviewLinks(sid), live = Live.linkFor(sid);
+      const go = await UI.dialog({ title: t('shareTitle'), size: 'md', html: `<p style="margin-top:0">${Util.esc(t('shareDone', { r: res.rev }))}</p>` +
+        `<h4 style="margin:12px 0 6px">${Util.esc(t('liveViewLink'))}</h4>` +
+        links.map((l, i) => `<div class="linkrow"><input class="inp" readonly value="${Util.esc(l)}" id="lnk${i}"><button class="btn sm" onclick="UI.copyFrom('lnk${i}')">${t('copy')}</button></div>`).join('') +
+        `<h4 style="margin:14px 0 6px">${Util.esc(t('liveEditLink'))}</h4><div class="linkrow"><input class="inp" readonly value="${Util.esc(live)}" id="lnkLive"><button class="btn sm" onclick="UI.copyFrom('lnkLive')">${t('copy')}</button></div>` +
+        `<p class="note" style="margin-top:8px">${Util.esc(t('liveShareNote'))}</p>`,
+        buttons: [{ label: t('close'), value: null }, { label: t('liveStartNow'), value: 'live', primary: true }] });
+      if (go === 'live') Live.start(sid);
     } catch (e) {
       if (e.status === 409 && e.data && e.data.current) {
         const c = e.data.current;
@@ -4052,6 +4577,201 @@ const Net = {
   }
 };
 Render.lastOkGuard = function () { Model.sync(); if (!S.lastRenderOk || S.lastRenderedCode !== S.doc.code) { UI.toast(Model.isSimple(S.doc) ? t('exportIssues') : t('exportStale'), 'err', 5000); return true; } return false; };
+
+/* -------------------------- live editing -------------------------- */
+// Several people type in the same diagram at once (through server.py). LiveOT keeps everyone's text identical.
+const Live = {
+  on: false, id: null, cid: null, color: null, client: null, seq: 0, mrev: -1, prev: -1, people: [],
+  last: '', applying: false, composing: false, queue: [], stopped: false, sendChain: Promise.resolve(), selTimer: null, lastSel: '', codeTimer: null, failCount: 0,
+  linkFor(id) { const b = (S.server && S.server.lan_urls && S.server.lan_urls[0]) || location.origin; return b.replace(/\/$/, '') + '/?live=' + encodeURIComponent(id); },
+  /** Join (or start) a live session. init = {text, meta, code} when the starter's copy should seed a brand-new session. */
+  async start(id, init) {
+    if (!ID_RE.test(id)) return false;
+    await Net.detect();
+    if (!S.server) { App.fatal(t('shareNeedServer') + ' ' + t('liveNeedServer')); return false; }
+    if (S.server.read_only) { App.fatal(t('readOnlyServer')); return false; }
+    let name = (S.settings.author || '').trim();
+    if (!name) { name = await UI.prompt(t('liveNameTitle'), t('liveNamePrompt'), ''); if (name == null) { if (!S.doc || S.doc.id === 'live') location.href = location.pathname; return false; } name = name.trim().slice(0, 40) || 'Guest'; App.setSetting('author', name); }
+    let res;
+    try { res = await Net.api('POST', `live/${encodeURIComponent(id)}/join`, { name, init: init || undefined }); }
+    catch (e) { App.fatal(t('liveJoinFail', { e: e.message })); return false; }
+    this.id = id; this.stopped = false; this.attach(res, true);
+    document.body.classList.add('live'); $('bannerLive').classList.remove('hidden');
+    history.replaceState(null, '', location.pathname + '?live=' + encodeURIComponent(id));
+    if (!this.listening) this.listen();
+    this.poll();
+    UI.toast(t('liveJoined'));
+    return true;
+  },
+  /** Load the server state into the editor and a local library copy (kept up to date while editing). */
+  attach(res, first) {
+    this.cid = res.cid; this.color = res.color; this.mrev = res.mrev; this.prev = -1; this.seq = 0; this.queue = []; this.failCount = 0;
+    const m = res.meta || {};
+    let local = null;
+    try { for (const x of Docs.index()) { const d = Docs.load(x.id); if (d && d.sharedId === this.id) { local = d; break; } } } catch {}
+    const base = local || { id: Util.newId(), sharedId: this.id };
+    const doc = Model.normalize({ ...base, name: m.name || base.name || this.id, mode: m.mode === 'mermaid' ? 'mermaid' : 'simple',
+      src: m.mode === 'mermaid' ? base.src : res.text, code: m.mode === 'mermaid' ? res.text : (base.code || ''), dir: m.dir, textDir: m.textDir,
+      theme: Valid.theme(m.theme), bg: Valid.bg(m.bg), sharedId: this.id });
+    if (local && !first) Docs.snapshot(local, true);
+    this.applying = true; this.on = true;
+    App.openDoc(doc); try { Docs.save(S.doc); } catch {}
+    this.last = ed().value; this.applying = false;
+    if (this.last !== res.text) console.warn('live: editor text differs from server text after join');
+    this.shadow = res.text; // the server's text at client.rev (what we know for sure is stored)
+    this.client = new LiveOT.Client(res.rev, { send: (rev, op) => this.sendOp(rev, op), applyRemote: (op) => this.applyRemote(op) });
+    this.setPeople(res.people || [], res.prev);
+    this.status('ok');
+  },
+  listen() {
+    this.listening = true;
+    const e = ed();
+    e.addEventListener('compositionstart', () => { this.composing = true; });
+    e.addEventListener('compositionend', () => { this.composing = false; setTimeout(() => { this.onInput(); this.drain(); }, 0); });
+    ['select', 'keyup', 'mouseup', 'focus'].forEach(ev => e.addEventListener(ev, () => this.scheduleSel()));
+    addEventListener('pagehide', () => this.leave(true));
+  },
+  /** Called on every local change of the editor text. */
+  onInput() {
+    if (!this.on || this.applying || this.composing || !this.client) return;
+    const v = ed().value; if (v === this.last) return;
+    const op = LiveOT.Op.fromDiff(this.last, v, ed().selectionEnd);
+    this.last = v; this.client.local(op); this.scheduleSel();
+  },
+  sendOp(rev, op) {
+    const seq = ++this.seq, body = { cid: this.cid, rev, op: op.ops, seq, sel: this.selNow() };
+    this.sendChain = this.sendChain.then(async () => {
+      for (let attempt = 0; this.on && !this.stopped; attempt++) {
+        try { await Net.api('POST', `live/${encodeURIComponent(this.id)}/op`, body); this.status('ok'); return; }
+        catch (e) {
+          if (e.status === 409 || e.status === 410 || e.status === 413 || e.status === 403) { if (e.status === 413) UI.toast(e.message, 'err', 6000); this.rejoin(); return; }
+          this.status('lost'); await new Promise(r => setTimeout(r, Math.min(8000, 800 * (attempt + 1))));
+        }
+      }
+    });
+  },
+  async poll() {
+    const my = this.cid;
+    while (this.on && !this.stopped && this.cid === my) {
+      try {
+        const q = `live/${encodeURIComponent(this.id)}/poll?cid=${my}&rev=${this.client.rev + this.queue.length}&mrev=${this.mrev}&prev=${this.prev}`;
+        const r = await Util.fetchT('/api/' + q, {}, 40000);
+        let j = null; try { j = await r.json(); } catch {}
+        if (this.cid !== my) return;
+        if (!r.ok) { if (r.status === 409 || r.status === 410) { this.rejoin(); return; } throw new Error((j && j.error) || ('HTTP ' + r.status)); }
+        this.failCount = 0; this.status('ok');
+        for (const h of j.ops || []) this.queue.push(h);
+        this.drain();
+        if (j.meta && j.mrev !== this.mrev) this.applyMeta(j.meta);
+        this.mrev = j.mrev;
+        this.setPeople(j.people || [], j.prev);
+      } catch (e) {
+        if (this.cid !== my || !this.on) return;
+        this.failCount++; this.status('lost');
+        await new Promise(r => setTimeout(r, Math.min(10000, 1000 * this.failCount)));
+      }
+    }
+  },
+  drain() {
+    if (this.composing) return;
+    while (this.queue.length) { const h = this.queue.shift(); try { const op = new LiveOT.Op(h.op); this.shadow = op.apply(this.shadow); this.client.server(op, h.cid === this.cid); } catch (e) { console.warn(e); this.rejoin(); return; } }
+  },
+  applyRemote(op) {
+    const e = ed(), s0 = e.selectionStart, s1 = e.selectionEnd, st = e.scrollTop, sl = e.scrollLeft, focused = document.activeElement === e;
+    const nv = op.apply(this.last);
+    this.applying = true; e.value = nv; this.last = nv;
+    if (focused) e.setSelectionRange(op.transformIndex(s0, true), op.transformIndex(s1, true)); // text typed by others at my caret goes after it, so two people typing at the same spot don't interleave
+    e.scrollTop = st; e.scrollLeft = sl; this.applying = false;
+    Editor.updateMeta(); App.onCodeChanged(true);
+  },
+  /** Lost the session (server restarted, too far behind, …): join again; unsent changes are kept in History. */
+  async rejoin() {
+    if (this.rejoining || !this.on) return; this.rejoining = true;
+    this.cid = null; this.status('lost');
+    for (let attempt = 0; this.on && !this.stopped; attempt++) {
+      try {
+        const res = await Net.api('POST', `live/${encodeURIComponent(this.id)}/join`, { name: S.settings.author || 'Guest' });
+        const mine = ed().value, lost = mine !== res.text;
+        // Server still has exactly what we last saw (e.g. it restarted after saving)? Then re-send our unsent changes on top.
+        const resend = lost && res.text === this.shadow;
+        if (lost) { Model.sync(); Docs.snapshot(S.doc, true); }
+        this.attach(res, false); this.rejoining = false;
+        if (resend) { Editor.set(mine); App.onCodeChanged(); }
+        UI.toast(resend ? t('liveRejoinedSent') : lost ? t('liveRejoinedLost') : t('liveRejoined'), lost && !resend ? 'warn' : 'ok', lost && !resend ? 7000 : 3000);
+        this.poll(); return;
+      } catch (e) {
+        if (e.status === 404) { this.rejoining = false; this.stop(); App.fatal(t('reviewGone')); return; }
+        await new Promise(r => setTimeout(r, Math.min(10000, 1500 * (attempt + 1))));
+      }
+    }
+    this.rejoining = false;
+  },
+  meta() { const d = S.doc; return { name: d.name, mode: d.mode, dir: d.dir, textDir: d.textDir || 'auto', theme: d.theme, bg: d.bg }; },
+  metaChanged() {
+    if (!this.on || this.applying || !this.cid) return;
+    Net.api('POST', `live/${encodeURIComponent(this.id)}/meta`, { cid: this.cid, meta: this.meta() }).then(r => { if (r && r.mrev) this.mrev = r.mrev; }).catch(() => {});
+  },
+  applyMeta(m) {
+    const d = S.doc; let themeChanged = false, dirChanged = false;
+    if (m.name && m.name !== d.name) { d.name = m.name; $('docName').value = d.name; document.title = d.name + ' – FlowChartCreation'; }
+    if (m.theme && m.theme !== d.theme) { d.theme = Valid.theme(m.theme); $('themeSelect').value = d.theme; Render.configured = null; themeChanged = true; }
+    if (m.bg && m.bg !== d.bg) { d.bg = Valid.bg(m.bg); $('bgSelect').value = d.bg; $('canvasViewport').className = 'bg-' + d.bg; themeChanged = true; }
+    if (m.dir && m.dir !== d.dir) { d.dir = m.dir; $('dirSelect').value = d.dir; dirChanged = true; }
+    if (m.textDir && m.textDir !== d.textDir) { d.textDir = m.textDir; dirChanged = true; }
+    if (themeChanged || dirChanged) { Model.sync(); App.applyEditorDir(); if (dirChanged) S.fitOnNextRender = true; App.saveNow(true); Render.run(); }
+    else App.saveNow(true);
+  },
+  selNow() { const e = ed(); return [e.selectionStart, e.selectionEnd]; },
+  scheduleSel() {
+    if (!this.on || !this.cid) return;
+    clearTimeout(this.selTimer);
+    this.selTimer = setTimeout(() => {
+      const sel = this.selNow(), k = sel.join(','); if (k === this.lastSel || (this.client && this.client.pending)) return; this.lastSel = k;
+      Net.api('POST', `live/${encodeURIComponent(this.id)}/sel`, { cid: this.cid, sel }).catch(() => {});
+    }, 350);
+  },
+  /** After a successful render: tell the server the generated Mermaid code, so the shared file and review links stay complete. */
+  rendered() {
+    if (!this.on || !this.cid || !Model.isSimple(S.doc)) return;
+    clearTimeout(this.codeTimer);
+    this.codeTimer = setTimeout(() => {
+      if (!this.client || this.client.pending || ed().value !== this.last) return;
+      Net.api('POST', `live/${encodeURIComponent(this.id)}/code`, { cid: this.cid, rev: this.client.rev, code: S.doc.code }).catch(() => {});
+    }, 1200);
+  },
+  setPeople(list, prev) {
+    if (typeof prev === 'number') this.prev = prev;
+    this.people = list;
+    const box = $('livePeople'); if (!box) return;
+    box.innerHTML = list.map(p => `<span class="lp" title="${Util.esc(p.name)}"><i style="background:${/^#[0-9a-f]{6}$/i.test(p.color) ? p.color : '#888'}"></i>${Util.esc(p.name)}${p.cid === this.cid ? ` <small>(${Util.esc(t('liveYou'))})</small>` : ''}</span>`).join('');
+    $('liveCount').textContent = t('livePeople', { n: list.length });
+    Editor.updateMeta();
+  },
+  /** Line number → colours of the other editors' carets (for the gutter). */
+  marks() {
+    const out = {}; if (!this.on) return out;
+    const v = ed().value;
+    for (const p of this.people) {
+      if (p.cid === this.cid || !p.sel) continue;
+      const pos = Math.min(v.length, p.sel[1] | 0); let line = 1; for (let i = 0; i < pos; i++) if (v.charCodeAt(i) === 10) line++;
+      (out[line] = out[line] || []).push(p);
+    }
+    return out;
+  },
+  status(st) {
+    const b = $('bannerLive'); if (!b) return;
+    b.classList.toggle('lost', st === 'lost');
+    $('liveState').textContent = st === 'lost' ? t('liveReconnecting') : t('liveBanner');
+  },
+  async copyLink() { const ok = await Util.copyText(this.linkFor(this.id)); UI.toast(ok ? t('copied') : t('copyFail'), ok ? 'ok' : 'err'); },
+  leave(silent) {
+    if (!this.on) return;
+    try { if (this.cid) navigator.sendBeacon('/api/live/' + encodeURIComponent(this.id) + '/leave', JSON.stringify({ cid: this.cid })); } catch {}
+    if (!silent) { App.saveNow(true); this.stop(); location.href = location.pathname; }
+  },
+  stop() { this.on = false; this.stopped = true; this.cid = null; document.body.classList.remove('live'); $('bannerLive').classList.add('hidden'); }
+};
+window.Live = Live;
 
 /* ---------------------------- review ---------------------------- */
 const Review = {
@@ -4107,6 +4827,7 @@ const UI = {
       + `<optgroup label="${Util.esc(t('tplAdvanced'))}">` + PRESETS.map(p => `<option value="${p.key}">${Util.esc(p[S.lang])}</option>`).join('') + '</optgroup>';
     $('dirSelect').innerHTML = Simple.DIRS.map(d => `<option value="${d}">${t('dir' + d)}</option>`).join('');
     if (S.doc) $('dirSelect').value = S.doc.dir || 'TD';
+    $('textDirSelect').innerHTML = ['auto', 'rtl', 'ltr'].map(d => `<option value="${d}">${t('textDir_' + d)}</option>`).join('');
     App.renderGuide(); App.applyEditorDir();
     $('themeSelect').innerHTML = THEMES.map(x => `<option value="${x}">${t('th' + x[0].toUpperCase() + x.slice(1))}</option>`).join('');
     $('bgSelect').innerHTML = BGS.map(x => `<option value="${x}">${t('bg' + x[0].toUpperCase() + x.slice(1))}</option>`).join('');
@@ -4197,6 +4918,7 @@ const UI = {
         (list.length ? list.map(d => `<div class="row"><div class="nm"><b>${Util.esc(d.name)}</b><span>${Util.esc(t('by', { a: d.author || '?' }))} · ${t('rev', { r: d.rev })} · ${Util.fmtTime(d.updated * 1000)}</span></div>
           <div class="acts"><a class="btn sm" href="?view=${encodeURIComponent(d.id)}" target="_blank" rel="noopener"><svg class="i"><use href="#i-eye"/></svg>${t('view')}</a>
           <button class="btn sm" onclick="App.importShared('${d.id}')">${t('importToLib')}</button>
+          ${S.server.read_only ? '' : `<button class="btn sm" onclick="location.href='?live=${d.id}'"><svg class="i"><use href="#i-users"/></svg>${t('liveLib')}${d.editors ? ` (${d.editors})` : ''}</button>`}
           ${S.server.read_only ? '' : `<button class="btn sm icon danger" title="${t('del')}" onclick="App.deleteShared('${d.id}')"><svg class="i"><use href="#i-trash"/></svg></button>`}</div></div>`).join('')
         : `<p class="note">${t('netEmpty')}</p>`) + '</div>';
     } catch (e) { body.innerHTML = tabs + `<p class="note">${Util.esc(e.message)}</p>`; }
@@ -4215,6 +4937,30 @@ const UI = {
     try { Docs.save(doc); } catch (e) { UI.toast(e.message, 'err'); return; }
     if (doc.id === S.doc.id) App.openDoc(doc); else App.openDoc(doc);
     UI.toast(t('histRestored'));
+  },
+  /** About window: what the program is, its version and who made it (details come from the ABOUT block at the top of the file). */
+  openAbout() {
+    const A = (window.FCC_ABOUT && typeof window.FCC_ABOUT === 'object') ? window.FCC_ABOUT : {};
+    const val = (k) => (typeof A[k] === 'string' ? A[k].trim() : '');
+    const creator = val('creator'), email = val('email'), org = val('organization');
+    const okMail = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(email);
+    const row = (k, v) => `<div class="kv"><span>${Util.esc(k)}</span><b dir="auto">${v}</b></div>`;
+    const notSet = `<i style="color:var(--muted);font-weight:400">${Util.esc(t('aboutNotSet'))}</i>`;
+    UI.dialog({ title: t('aboutTitle'), size: 'md', html: `
+      <div style="display:flex;gap:14px;align-items:center;margin-bottom:12px"><svg class="i" style="width:44px;height:44px;color:var(--accent)"><use href="#i-logo"/></svg>
+        <div><div style="font-size:18px;font-weight:700">FlowChartCreation</div><div style="color:var(--muted)">${Util.esc(t('aboutTagline'))}</div></div></div>
+      <p style="margin:0 0 12px">${Util.esc(t('aboutDesc'))}</p>
+      <div class="kvs">
+        ${row(t('aboutVersion'), Util.esc(APP_VERSION) + ` <span style="color:var(--muted);font-weight:400">(${Util.esc(BUILD_DATE)})</span>`)}
+        ${row(t('aboutCreator'), creator ? Util.esc(creator) : notSet)}
+        ${org ? row(t('aboutOrg'), Util.esc(org)) : ''}
+        ${row(t('aboutEmail'), email ? (okMail ? `<a href="mailto:${Util.esc(email)}" style="color:var(--accent)">${Util.esc(email)}</a>` : Util.esc(email)) : notSet)}
+        ${row(t('aboutLibs'), `Mermaid ${Util.esc(MERMAID_VERSION)} · jsPDF ${Util.esc(JSPDF_VERSION)} (MIT)`)}
+        ${row(t('aboutMode'), Util.esc(S.server ? t('aboutModeServer', { h: location.host }) : t('aboutModeLocal')))}
+      </div>
+      ${creator && email ? '' : `<p class="note" style="margin-top:12px">${t('aboutHowEdit')}</p>`}
+      <p class="note" style="margin-top:8px">${Util.esc(t('aboutVerify'))}</p>`,
+      buttons: [{ label: t('close'), value: null, primary: true }] });
   },
   openHelp() {
     const ex = (id) => `<pre class="code" id="hx-${id}">${Util.esc(HELP_EX[id])}</pre><button class="btn sm primary" onclick="UI.useHelp('${id}')"><svg class="i"><use href="#i-down"/></svg>${t('loadIntoEditor')}</button>`;
@@ -4341,7 +5087,7 @@ const Tests = {
     $('testSummary').style.color = c.fail ? 'var(--err)' : 'var(--ok)';
   },
   hiddenHost() { let h = $('testHost'); if (!h) { h = document.createElement('div'); h.id = 'testHost'; h.style.cssText = 'position:fixed;left:-20000px;top:0;width:4000px;opacity:0;pointer-events:none'; document.body.appendChild(h); } return h; },
-  async renderInto(code, theme = 'default') { const svg = await Render.toSvg(code, theme); const h = this.hiddenHost(); h.innerHTML = svg; const el = h.querySelector('svg'); Render.finalize(el); Render.configured = null; return el; },
+  async renderInto(code, theme = 'default', o = null) { const svg = await Render.toSvg(o && o.layoutCode || code, theme); const h = this.hiddenHost(); h.innerHTML = svg; const el = h.querySelector('svg'); Render.finalize(el, o ? { code, loops: o.loops, edges: o.edges, rtl: o.rtl } : { code }); Render.configured = null; return el; },
   defs() {
     const T = [];
     const add = (name, fn) => T.push({ name, fn });
@@ -4490,6 +5236,74 @@ const Tests = {
       await Net.del(id); if (!conflict) throw new Error('conflict detection missing');
       return (S.server.lan_urls || []).join(', ') || location.host;
     });
+    add('Loop arrows: leave from the bottom, enter from the side, separate lanes', async () => {
+      const src = 'Receive order\nIn stock?\n  Yes: Pack\n  No:\n    Order from supplier\n    → In stock?\nShip\nPaid?\n  No: → Receive order\n  Yes:\nend: Done';
+      const comp = Simple.compile(src, { dir: 'TD' });
+      if (comp.loops.length !== 2) throw new Error('expected 2 loops, got ' + comp.loops.length);
+      if (comp.layoutCode.includes('-.->') || !comp.code.includes('-.->')) throw new Error('loops must stay in the Mermaid code but not in the layout');
+      const el = await this.renderInto(comp.code, 'default', comp);
+      const paths = [...el.querySelectorAll('path.fc-loop')]; if (paths.length !== 2) throw new Error('loop arrows drawn: ' + paths.length);
+      const box = (id) => { const g = [...el.querySelectorAll('g.node')].find(n => n.id.startsWith('flowchart-' + id + '-')); const t = g.transform.baseVal.consolidate().matrix, b = g.getBBox(); return { x1: t.e + b.x, x2: t.e + b.x + b.width, y1: t.f + b.y, y2: t.f + b.y + b.height }; };
+      const lanes = new Set();
+      for (const p of paths) {
+        const cls = p.getAttribute('class'), from = /LS-(\S+)/.exec(cls)[1], to = /LE-(\S+)/.exec(cls)[1];
+        const len = p.getTotalLength(), a = p.getPointAtLength(0), z = p.getPointAtLength(len), S = box(from), T = box(to);
+        const sideStart = Math.abs(a.x - S.x1) < 2 || Math.abs(a.x - S.x2) < 2, bottomStart = Math.abs(a.y - S.y2) < 2;
+        if (!bottomStart && !sideStart) throw new Error('loop from ' + from + ' does not start at the bottom/side');
+        if (a.y < S.y1 + (S.y2 - S.y1) / 2 - 1) throw new Error('loop from ' + from + ' starts on the upper half');
+        if (!(z.x < T.x1 + 1 || z.x > T.x2 - 1)) throw new Error('loop into ' + to + ' does not enter from the side');
+        lanes.add(Math.round(p.getPointAtLength(len / 2).x));
+      }
+      if (lanes.size !== 2) throw new Error('loops share a lane');
+      const mm = await this.renderInto('flowchart TD\n A[Start] --> B{OK?}\n B -->|No| C[Fix]\n C --> B\n B -->|Yes| D[End]');
+      if (!mm.querySelector('path.fc-loop')) throw new Error('Mermaid-mode back edge not re-routed');
+      return '2 loops on separate lanes + Mermaid mode';
+    });
+    add('Hebrew text → right-to-left editor and diagram', async () => {
+      if (Simple.hebrewRatio('קבלת הזמנה\nיש במלאי?') < 0.9 || Simple.hebrewRatio('Receive order') > 0) throw new Error('language detection');
+      const d = { mode: 'simple', src: 'התחלה\nתקין?\n  כן: אלף\n  לא: בית', dir: 'LR', textDir: 'auto' };
+      if (!Model.isRtl(d)) throw new Error('Hebrew text not detected as RTL');
+      if (!Model.compile(d).code.startsWith('flowchart RL')) throw new Error('left-to-right flow not mirrored');
+      if (Model.isRtl({ ...d, textDir: 'ltr' })) throw new Error('manual LTR ignored');
+      if (!Model.isRtl({ mode: 'simple', src: 'Start', textDir: 'rtl' })) throw new Error('manual RTL ignored');
+      const el = await this.renderInto(Model.compile({ ...d, dir: 'TD' }).code);
+      const pos = (txt) => { const g = [...el.querySelectorAll('g.node')].find(n => n.textContent.includes(txt)); return g.transform.baseVal.consolidate().matrix.e; };
+      if (!(pos('אלף') > pos('בית'))) throw new Error('first answer is not on the right');
+      return 'detected, mirrored, first answer on the right';
+    });
+    add('Live editing engine (merging simultaneous typing)', async () => {
+      const { Op, Client } = LiveOT; let server = 'שלום world', hist = []; const inbox = [];
+      const mk = (k) => { const c = { k, text: server, seen: 0 }; c.cl = new Client(0, { send: (rev, op) => inbox.push({ k, rev, op }), applyRemote: (op) => { c.text = op.apply(c.text); } }); return c; };
+      const A = mk(0), B = mk(1), type = (c, at, s) => { const nt = c.text.slice(0, at) + s + c.text.slice(at); c.cl.local(Op.fromDiff(c.text, nt)); c.text = nt; };
+      const deliver = () => { while (inbox.length) { const m = inbox.shift(); let op = m.op; for (const h of hist.slice(m.rev)) op = Op.transform(op, h.op)[0]; server = op.apply(server); hist.push({ op, k: m.k }); }
+        for (const c of [A, B]) while (c.seen < hist.length) { const h = hist[c.seen++]; c.cl.server(h.op, h.k === c.k); } };
+      type(A, 0, 'A1 '); type(B, 4, ' B1'); type(A, 3, 'A2 '); deliver(); type(B, 0, 'B2 '); type(A, A.text.length, ' A3'); deliver(); deliver();
+      if (A.text !== B.text || A.text !== server) throw new Error('editors diverged: ' + A.text + ' | ' + B.text);
+      return server;
+    });
+    add('Live editing through the server', async () => {
+      await Net.detect(); if (!S.server) return { skip: t('netNone') };
+      if (S.server.read_only || !S.server.live) return { skip: t('readOnlyServer') };
+      const id = 'selftest-live-' + Date.now().toString(36);
+      await Net.put(id, { name: 'live test', code: 'flowchart TD\n a-->b', src: 'a\nb', mode: 'simple', theme: 'dark', bg: 'dark', author: 'selftest', base_rev: null });
+      const j1 = await Net.api('POST', `live/${id}/join`, { name: 'one' }), j2 = await Net.api('POST', `live/${id}/join`, { name: 'two' });
+      await Net.api('POST', `live/${id}/op`, { cid: j1.cid, rev: 0, op: ['X', 3], seq: 1 });
+      await Net.api('POST', `live/${id}/op`, { cid: j2.cid, rev: 0, op: [3, 'Y'], seq: 1 });   // concurrent with the first
+      const p = await Net.api('GET', `live/${id}/poll?cid=${j2.cid}&rev=0&mrev=-1&prev=-1`);
+      let text = j2.text; for (const h of p.ops) text = new LiveOT.Op(h.op).apply(text);
+      if (text !== 'Xa\nbY') throw new Error('server merge gave ' + JSON.stringify(text));
+      if (p.people.length !== 2) throw new Error('presence list');
+      await Net.api('POST', `live/${id}/leave`, { cid: j1.cid }); await Net.api('POST', `live/${id}/leave`, { cid: j2.cid });
+      await new Promise(r => setTimeout(r, 1900));
+      const saved = await Net.get(id); await Net.del(id);
+      if (saved.src !== 'Xa\nbY') throw new Error('not saved to the shared file');
+      return 'merged, presence, saved';
+    });
+    add('About window details', async () => {
+      if (!/^\d+\.\d+\.\d+$/.test(APP_VERSION)) throw new Error('version missing');
+      if (!window.FCC_ABOUT || typeof window.FCC_ABOUT !== 'object') throw new Error('ABOUT block missing at the top of the file');
+      return 'v' + APP_VERSION + (window.FCC_ABOUT.creator ? ' · ' + window.FCC_ABOUT.creator : ' · creator not set yet');
+    });
     return T;
   },
   async run() {
@@ -4516,9 +5330,11 @@ const App = {
     el.querySelector('.lbl').textContent = st === 'saved' ? (S.doc.updated ? t('savedAt', { t: Util.fmtTime(S.doc.updated) }) : t('saved')) : st === 'dirty' ? t('unsaved') : t('saveFailed');
     el.title = st === 'error' ? (S.saveError || '') : '';
   },
-  onCodeChanged() {
+  onCodeChanged(remote) {
     if (S.review) return;
+    const wasRtl = S.compiled ? S.compiled.rtl : null;
     Model.sync(); S.saveState = 'dirty'; this.updateSaveStatus();
+    if (S.compiled && S.compiled.rtl !== wasRtl) this.applyEditorDir();
     clearTimeout(S.saveTimer); S.saveTimer = setTimeout(() => this.saveNow(), 700);
     if (S.autoRender) Render.schedule();
   },
@@ -4542,6 +5358,7 @@ const App = {
     S.fitOnNextRender = fit; Render.run();
   },
   openDoc(doc) {
+    if (Live.on && !Live.applying) { Live.leave(true); Live.stop(); history.replaceState(null, '', location.pathname); } // opening another diagram ends live editing
     S.doc = Model.normalize({ theme: 'dark', bg: 'dark', ...doc, theme: Valid.theme(doc.theme), bg: Valid.bg(doc.bg) });
     S.saveState = 'saved'; this.setSetting('lastId', S.doc.id); this.applyDocToUi(true); this.updateSaveStatus();
   },
@@ -4600,15 +5417,17 @@ const App = {
     const w = WF_TEMPLATES.find(x => x.key === key); if (w) return this.loadTemplate({ mode: 'simple', src: w.src, dir: w.dir });
     const p = PRESETS.find(x => x.key === key); if (p) this.loadTemplate({ mode: 'mermaid', code: p.code });
   },
-  setDir(v) { if (!S.doc) return; S.doc.dir = Simple.DIRS.includes(v) ? v : 'TD'; S.fitOnNextRender = true; Model.sync(); if (!S.review) this.saveNow(true); Render.run(); },
+  setDir(v) { if (!S.doc) return; S.doc.dir = Simple.DIRS.includes(v) ? v : 'TD'; S.fitOnNextRender = true; Model.sync(); if (!S.review) this.saveNow(true); Render.run(); Live.metaChanged(); },
   async toAdvanced() {
     if (S.review || !Model.isSimple(S.doc)) return;
+    if (Live.on) { UI.toast(t('liveNoMode'), 'warn', 5000); return; }
     if (!(await UI.confirm(t('toAdvTitle'), t('toAdvMsg'), t('editAsMermaid')))) return;
     Model.sync(); Docs.snapshot(S.doc, true);
     S.doc.mode = 'mermaid'; this.applyDocToUi(false); this.saveNow(true);
   },
   async toSimple() {
     if (S.review || Model.isSimple(S.doc)) return;
+    if (Live.on) { UI.toast(t('liveNoMode'), 'warn', 5000); return; }
     if (typeof S.doc.src !== 'string') { UI.dialog({ title: t('backToSimple'), html: `<p class="note">${Util.esc(t('noSimpleSrc'))}</p>`, buttons: [{ label: t('ok'), value: null, primary: true }] }); return; }
     Model.sync();
     const unchanged = Simple.compile(S.doc.src, { dir: S.doc.dir }).code === S.doc.code;
@@ -4637,7 +5456,21 @@ const App = {
   },
   updateMermaidPanel() { const o = $('mmdOut'); if (o && S.doc && S.settings.showMermaid) o.textContent = S.doc.code || ''; },
   async copyMermaid() { Model.sync(); const ok = await Util.copyText(S.doc.code || ''); UI.toast(ok ? t('copiedCode') : t('copyFail'), ok ? 'ok' : 'err'); },
-  applyEditorDir() { const e = ed(); if (e) e.style.direction = (Model.isSimple(S.doc) && S.lang === 'he') ? 'rtl' : 'ltr'; },
+  /** Editor follows the text: right-to-left (and right-aligned) for Hebrew workflows, left-to-right for Mermaid code. */
+  applyEditorDir() {
+    const e = ed(); if (!e) return;
+    const rtl = !!S.doc && Model.isSimple(S.doc) && Model.isRtl(S.doc);
+    e.style.direction = rtl ? 'rtl' : 'ltr'; e.style.unicodeBidi = rtl ? 'normal' : ''; e.style.textAlign = rtl ? 'right' : '';
+    const w = e.parentNode; if (w) w.dir = rtl ? 'rtl' : 'ltr';
+    document.body.classList.toggle('textrtl', rtl);
+    const sel = $('textDirSelect'); if (sel && S.doc) sel.value = S.doc.textDir || 'auto';
+  },
+  setTextDir(v) {
+    if (!S.doc || S.review) return;
+    Model.sync(); S.doc.textDir = ['auto', 'rtl', 'ltr'].includes(v) ? v : 'auto';
+    Model.sync(); this.applyEditorDir(); S.fitOnNextRender = true; this.saveNow(true); Render.run();
+    Live.metaChanged();
+  },
   guideHtml() {
     const he = S.lang === 'he';
     const rows = he ? [
@@ -4663,8 +5496,8 @@ const App = {
       <p style="margin:10px 0 0;font-size:11.5px">${he ? 'אחרי התשובות, השורה הלא-מוזחת הבאה מחברת את כל הענפים. Enter שומר על ההזחה; Enter בשורה ריקה חוזר רמה אחת. לחיצה על צורה בתרשים מסמנת את השורה שלה.' : 'After the answers, the next un-indented line joins all branches again. Enter keeps the indentation; Enter on an empty line steps one level back. Click a shape in the diagram to find its line.'}</p>`;
   },
   renderGuide() { const b = $('guideBody'); if (b) b.innerHTML = this.guideHtml(); },
-  setTheme(v) { S.doc.theme = Valid.theme(v); Render.configured = null; if (!S.review) this.saveNow(true); Render.run(); },
-  setBg(v) { S.doc.bg = Valid.bg(v); $('canvasViewport').className = 'bg-' + S.doc.bg; if (!S.review) this.saveNow(true);
+  setTheme(v) { S.doc.theme = Valid.theme(v); Render.configured = null; if (!S.review) this.saveNow(true); Render.run(); Live.metaChanged(); },
+  setBg(v) { S.doc.bg = Valid.bg(v); $('canvasViewport').className = 'bg-' + S.doc.bg; if (!S.review) this.saveNow(true); Live.metaChanged();
     if (S.doc.bg === 'light' && S.doc.theme === 'dark') { $('themeSelect').value = 'default'; this.setTheme('default'); }
     if (S.doc.bg === 'dark' && (S.doc.theme === 'default' || S.doc.theme === 'neutral' || S.doc.theme === 'forest')) { $('themeSelect').value = 'dark'; this.setTheme('dark'); } },
   setAutoRender(v) { S.autoRender = v; this.setSetting('autoRender', v); if (v) Render.run(); },
@@ -4693,7 +5526,7 @@ const App = {
     $('docName').addEventListener('change', () => {
       const nv = Valid.name($('docName').value);
       if (!nv.ok) { UI.toast(nv.msg, 'err'); $('docName').value = S.doc.name; return; }
-      S.doc.name = nv.value; this.saveNow(); document.title = S.doc.name + ' – FlowChartCreation';
+      S.doc.name = nv.value; this.saveNow(); document.title = S.doc.name + ' – FlowChartCreation'; Live.metaChanged();
     });
     $('docName').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
     addEventListener('beforeunload', (e) => {
@@ -4720,6 +5553,7 @@ const App = {
     // 3) review mode?
     const params = new URLSearchParams(location.search);
     if (params.get('view')) { window.__fccAppReady = true; S.doc = { id: 'review', name: '', code: '', mode: 'mermaid', theme: 'dark', bg: 'dark' }; await Review.start(params.get('view')); return; }
+    if (params.get('live')) { S.doc = Model.normalize({ id: 'live', name: 'Live', mode: 'simple', src: '', theme: 'dark', bg: 'dark' }); window.__fccAppReady = true; await Live.start(params.get('live')); return; }
     // 4) restore last work (with index repair)
     Docs.repairIndex();
     let doc = S.settings.lastId && Docs.load(S.settings.lastId);

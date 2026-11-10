@@ -1,115 +1,155 @@
-# FlowChartCreation 2.2.2
+# FlowChartCreation 2.3
 
-A self-contained studio for creating and managing workflows in **Hebrew and English**. You describe the process in plain text — one step per line — and the diagram is drawn for you. The underlying [Mermaid](https://mermaid.js.org) code is generated automatically and stays out of the way (advanced users can view or edit it).
+Workflow diagrams from plain text, in **Hebrew and English**. You write the process one step per line, and the diagram draws itself. Everything — the diagram engine (Mermaid 10.9.3) and the PDF library (jsPDF 2.5.2) — is inside **one HTML file**: no installation and no internet needed.
 
-Everything (Mermaid 10.9.3 and jsPDF 2.5.2 included) lives inside **one HTML file**. No internet connection, installation or build step is needed.
+עברית: ראו `README_HE.md`.
 
-## Contents
+---
 
-| File | Purpose |
+## 1. Run it on your computer (no installation)
+
+1. **Extract the whole ZIP** to a folder (right-click → *Extract All…*). Don't run the files from inside the ZIP.
+2. **Check the files** (optional, 10 seconds): double-click `verify_files.bat` (Mac/Linux: `./verify_files.sh`). Every line should say **OK**.
+3. **Double-click `FlowChartCreation.html`.** It opens in your browser (Chrome or Edge recommended; Firefox works too).
+4. **Write your workflow** in the left panel — the diagram appears on the right. Click **Guide** for a cheat sheet, or pick a ready example under **Templates…**.
+5. Your work is **saved automatically** in this browser (the header shows *Saved hh:mm*). Use **Library** to see all your diagrams, **Save as…** to keep a `.flowchart` file, and **Export** for PNG / PDF / SVG.
+
+![Main window](docs/01_main.png)
+
+> Your library lives in the browser you use. Opening the file directly (`file://…`) and opening it through the server (`http://…`) keep **separate** libraries — use *Library → Backup all* / *Open file* to move diagrams between them or to another computer.
+
+## 2. Share on your network for review (view only)
+
+You need **Python 3** once, on the computer that shares (the "host"). The people who review need only a browser.
+
+1. **Install Python 3** from <https://www.python.org/downloads/>. In the installer, tick **"Add python.exe to PATH"**, then *Install Now*. (Skip if Python is already installed.)
+2. **Double-click `start_server.bat`** (Mac/Linux: `./start_server.sh`). A black window opens and shows addresses such as
+   `On your network : http://192.168.1.20:8765`. Keep this window open while you share.
+3. **Windows Firewall** may ask whether to allow Python. Tick **Private networks** and click **Allow access**. (Without this, others can't connect.)
+4. Your browser opens the app from the server. Open (or write) your diagram and click **Share** → type your name → **OK**.
+5. The Share window shows two links. **Copy the review link** (`…/?view=…`) and send it (email, Teams, chat) to people **on the same network**.
+6. Reviewers click the link: they see the diagram read-only, and it **updates by itself** every time you click Share again. They can export it or *Copy to my library* to work on their own copy.
+7. **To stop sharing**, close the black server window (or press **Ctrl+C** in it). Shared diagrams stay in the `shared_diagrams` folder for next time.
+
+![Share window](docs/02_share.png)
+
+## 3. Edit together (everyone types at the same time)
+
+1. Start the server and click **Share** as in section 2 (steps 1–4).
+2. In the Share window, click **Start editing together**, or copy the **edit-together link** (`…/?live=…`) and send it to your colleagues.
+3. Each person who opens the link is asked for their **name** once. A green bar shows who is editing, each with a colour; the line each person is on is marked in that colour in the line numbers.
+4. Everyone types in the same diagram. Changes appear for the others within a moment, and simultaneous typing — even on the same line — is merged without losing anyone's text.
+5. Changes are **saved on the server automatically** (about 1.5 seconds after the last keystroke) and also in each editor's own Library, with History.
+6. Click **Leave** to stop. If the connection drops, a yellow bar says *reconnecting*; your changes are kept and sent when the connection returns.
+
+Notes: while editing together, switching between simple text and Mermaid code is disabled, and the browser's Undo (Ctrl+Z) only covers your own typing since the last change from someone else. Everyone can also change the diagram name, direction and theme — those changes are shared too.
+
+![Editing together](docs/03_live.png)
+
+## 4. Outside the office network ("remotely")
+
+The server is meant for a **trusted local network** (office LAN or Wi-Fi). It has **no login**, so **never open it to the internet** (no port forwarding on your router).
+
+To work with someone outside the office, both sides should be on the same private network first:
+- **Company VPN** — connect to the VPN, then use the normal links (ask IT which address to use if the one shown doesn't work).
+- **A private-network tool** such as Tailscale or ZeroTier — install it on the host and on each colleague's computer, then replace the address in the link with the host's Tailscale/ZeroTier address (e.g. `http://100.64.1.5:8765/?live=…`).
+
+Check your organisation's IT policy before installing such tools.
+
+## 5. Put your name in the About window
+
+The **ⓘ** button (top right) opens *About*: description, version, creator and contact.
+
+1. Right-click `FlowChartCreation.html` → *Open with* → **Notepad**.
+2. Near the top, find **`ABOUT – EDIT HERE`** and type your details between the quotes:
+   `creator: "Dana Levi",`  `email: "dana@example.com",`  `organization: "Operations"`
+3. **Save** (Notepad: *File → Save*; keep encoding **UTF-8**). Close Notepad.
+4. Double-click **`update_checksums.bat`** (Mac/Linux: `./update_checksums.sh`) and answer **Y**. This records the edited file as correct, so `verify_files` keeps reporting OK.
+
+## 6. Troubleshooting
+
+| Problem | What to do |
 |---|---|
-| `FlowChartCreation.html` | The app. Double-click to open in Chrome, Edge or Firefox. |
-| `server.py` | Optional local-network server for sharing and reviewing (Python 3.8+, standard library only). |
-| `start_server.bat` / `start_server.sh` | One-click launchers for the server (Windows / macOS-Linux). |
-| `verify_files.bat` / `verify_files.sh` | Checks every file against `CHECKSUMS.sha256` (SHA-256). Run it if the app shows a blank page or the "file is damaged" message. |
-| `CHECKSUMS.sha256` | Expected SHA-256 of each file. |
-| `shared_diagrams/` | Created by the server; one JSON file per shared diagram. |
+| Blank page, or "This file is damaged" | The file was corrupted when copying/unzipping. Extract the ZIP again (*Extract All*) and run `verify_files.bat`. |
+| `verify_files` says DAMAGED for the HTML after you edited the About block | Expected — run `update_checksums.bat` once after your own edits. |
+| `start_server.bat` says *Python 3 was not found* | Install Python (section 2, step 1) with "Add python.exe to PATH", then close and reopen the window. |
+| "Port 8765 is busy – using 8766" | Another program uses the port. Fine — use the new address shown. Or start with `py server.py --port 9000`. |
+| Colleagues can't open the link | Allow Python in Windows Firewall for **Private** networks (Control Panel → Windows Defender Firewall → *Allow an app*). Make sure you're on the same network and the black window is still open. |
+| The link stopped working the next day | The host's network address can change. Look at the address in the black window and send the new link. |
+| "Sharing needs the local server" | You opened the file directly. Open the `http://…` address that the server window shows. |
+| A reviewer sees an old version | Click **Share** again — review links update within 4 seconds. |
+| My diagrams disappeared | You're probably in the other library (file vs. server address, or another browser). Open the other one, or restore a *Backup all* file. |
 
-## Writing a workflow (simple text)
+Server options: `--port 9000` · `--read-only` (view only, no editing or publishing) · `--host 127.0.0.1` (this computer only) · `--data <folder>`.
+
+---
+
+## Writing a workflow
 
 ```
 Receive customer order            ← each line is a step; steps connect top to bottom
-Check stock in ERP
 In stock?                         ← a line ending with "?" is a question
   Yes: Send to warehouse          ← indented "answer:" lines are the branches
   No:
     Create purchase order         ← several steps in an answer: indent further
-    → Check stock in ERP          ← "→" or "go to" jumps back to an existing step
+    → In stock?                   ← "→" or "go to" goes back to an existing step
 data: Update SQL Server           ← shape words: data:, end:, input:, sub:
 end: Order completed
 ```
 
 | Write | Result |
 |---|---|
-| a plain line | step (the first one is drawn as the start oval, the last as the end oval) |
+| a plain line | step (the first is drawn as the start oval, the last as the end oval) |
 | line ending with `?` (or starting with `if` / `אם`) | question (diamond) |
-| indented `Yes: …`, `No: …`, `Approved: …` | branches with that label on the arrow – any wording works |
-| `→ step`, `go to step`, `חזור ל…` | dashed arrow back (or forward) to a step that already exists |
-| `end: …` / `סוף: …`, `data: …` / `נתונים: …`, `input: …` / `קלט: …`, `sub: …` | end, database, input/output, sub-process shapes |
+| indented `Yes: …`, `No: …`, `Approved: …` | branches with that label on the arrow |
+| `→ step`, `go to step`, `חזור ל…` | dashed arrow back (or forward) to an existing step |
+| `end: …` / `סוף: …`, `data: …` / `נתונים: …`, `input: …` / `קלט: …`, `sub: …` | end, database, input/output, sub-process |
 | `# Warehouse` | group / swim lane for the following lines (`#` alone ends it) |
 | `// …` | comment (not drawn) |
 
-After the answers, the next line with less indentation joins all branches again. Hebrew and English keywords both work in either interface language.
+**Loop arrows** ("go back to…") leave a box from the bottom, run along their own lane beside the diagram and enter the target box from the side; several loops get separate lanes, so arrows never pile up on each other.
 
-**Helpers:** the buttons above the text (Step, Question, Go back to…, Data, End, Group) insert the right line with the right indentation; *Go back to…* lets you pick the step from a list. **Enter** keeps the indentation (and goes one level deeper after a question or an `answer:`); Enter on an empty line steps one level back. **Click a shape** in the diagram to jump to its line. Mistakes are explained in plain language with the line number and a "did you mean…" suggestion, and the line is highlighted. The **Guide** button shows a cheat sheet; the direction box sets the flow (↓ → ← ↑).
+**Hebrew:** when most of the text is Hebrew, the editor switches to right-to-left and right-aligned, a left-to-right flow becomes right-to-left, and the first answer is placed on the right. The **⇄ Auto / RTL / LTR** box next to the direction box lets you choose manually.
 
-**Mermaid code (advanced):** the `</>` button shows the generated code read-only, with *Copy* and *Edit as Mermaid…*. Editing as Mermaid switches that diagram to code mode (badge "Advanced"); *Back to simple text* returns to your text (the code version is kept in History). Sequence, Gantt, class and state diagrams are available as Mermaid templates under *Templates → Advanced*.
+**Helpers:** the buttons above the text insert the right line with the right indentation. **Enter** keeps the indentation (one level deeper after a question); Enter on an empty line steps back. **Click a shape** to find its line. Mistakes are explained in plain words with a "did you mean…" suggestion. The `</>` button shows the generated Mermaid code (advanced).
 
 ## Features
 
-**1. Saving your work**
-- Every change is autosaved in the browser (status pill in the header shows *Saved hh:mm*). Each save is read back and verified.
-- **Library** (Ctrl+O): all your diagrams — open, rename, duplicate, delete, search.
-- **History**: up to 20 automatic snapshots per diagram (taken every ~2 minutes of editing, and before any template/restore replaces your code).
-- **Save as…** (Ctrl+Shift+S) asks for the file name (in Chrome/Edge: the normal Windows *Save as* window, so you also choose the folder) and writes a portable `.flowchart` file; the chosen name also becomes the diagram's name. PNG/PDF/SVG exports ask for a file name the same way. **Backup all** writes the whole library to one `.json`. Open either with *Open file* or by dragging onto the window. Old v1 `.flowchart` files and plain `.mmd` files are accepted.
-- Browser storage is per browser and per address: `file://…` and `http://…:8765` keep separate libraries. Use *Backup all* / *Restore backup* to move between them or between computers.
+- **Saving:** autosave with read-back verification, Library (Ctrl+O), History (20 snapshots per diagram), *Save as…* `.flowchart` files with your own file name, *Backup all*.
+- **Export without losing data:** real text in the diagram, PNG 2×/3×/4×, PDF (exact size, A4/A3, or A4 real size over several pages), SVG, `.mmd`.
+- **Mouse:** wheel zooms around the pointer, left-drag moves, double-click fits.
+- **Self-test** (header): checks the compiler, arrow routing, right-to-left layout, rendering, exports, storage, and — through the server — sharing and live editing.
 
-**2. Hebrew & English**
-- Full UI in both languages with proper RTL layout (button in the header; remembered).
-- Hebrew labels in diagrams render with correct direction and punctuation, including mixed Hebrew + English (`בדיקת מלאי ב-ERP`, `יש במלאי? (Stock > 0)`).
-- Tips: use English node IDs (`A`, `step1`) with Hebrew labels; use `flowchart RL` for right-to-left flow; wrap labels containing `( ) : "` in double quotes: `A["טקסט (X)"]`.
+## Files
 
-**3. Export without losing data**
-- Diagrams are rendered with real SVG text (no HTML labels), so exports contain exactly what you see.
-- **PNG** at 2×/3×/4× resolution. **PDF** options: exact diagram size (1 page), A4 or A3 fit-to-page, or **A4 real size split over several pages** for large workflows. **SVG** (vector) and **.mmd** (source) too.
-- Optional title + date header (Hebrew supported).
-- Checks before export: the code must render without errors (so a file never shows an older diagram than your code). Checks after: image not blank, valid PNG/PDF signature, and very large diagrams are automatically scaled to stay within browser limits (you're told when this happens).
-
-**4. Review & share on the local network**
-1. Run `start_server.bat` (Windows) or `./start_server.sh` (macOS/Linux). It prints addresses like `http://192.168.1.20:8765`.
-2. Open that address, work as usual, press **Share**, enter your name → you get a review link.
-3. Anyone on the same network opens the link: a read-only **review mode** that updates live (every 4 s) when you publish again. Reviewers can export or *Copy to my library* to edit their own copy.
-4. If someone else published in between, you're asked to overwrite or load their version — nothing is silently lost. The server also keeps the previous version as `.json.bak`, and deleted diagrams go to `shared_diagrams/_deleted/`.
-
-Server options: `--port 9000`, `--read-only` (view only), `--host 127.0.0.1` (this PC only), `--data <folder>`.
-If others can't connect, allow Python through the Windows firewall for **Private** networks. There is no login — run it only on networks you trust.
-
-## Verification
-
-**Nothing to install.** The app needs only a modern browser (Chrome, Edge, Firefox); all libraries are inside the HTML file. The optional server needs Python 3.8+ with its standard library only – there is no `requirements.txt` because there are no third-party packages.
-
-**If the page stays blank or reports "This file is damaged":** the file was corrupted in transfer (e.g. a CRC error while unzipping or copying). Download the ZIP again, use *Extract All*, and run `verify_files.bat` – every line should say `OK`. Some corporate security/DLP tools rewrite or block large HTML files with embedded scripts; if a fresh copy still fails the check, copy it through a different route or ask IT to allow it.
-
-**Copying through Word-based tools (e.g. CodeDoc):** the HTML contains no control characters, so it survives a Word/.docx round trip byte-for-byte (verified with CodeDoc export → import).
-
-
-Click **Self-test** (header) to run the built-in checks: workflow-text compiler (branches, loops, Hebrew keywords, groups, error messages, every template), libraries loaded offline with no external requests, storage round-trip with Hebrew, save → verify → history → delete, rendering of every template, Hebrew label alignment, syntax-error line reporting, PNG and all four PDF modes, SVG validity, project-file validation (accepts good / rejects malformed or oversized files), name validation, and — when opened through the server — publish / read-back / conflict detection / delete. *Copy report* puts the results on the clipboard.
+| File | Purpose |
+|---|---|
+| `FlowChartCreation.html` | The app. |
+| `server.py` | Local-network server for review and editing together (Python 3.8+, standard library only — nothing to `pip install`). |
+| `start_server.bat` / `.sh` | Start the server (Windows / Mac-Linux). |
+| `verify_files.bat` / `.sh` | Check every file against `CHECKSUMS.sha256`. |
+| `update_checksums.bat` / `.sh` | Record the current files as correct after your own edits (e.g. the About block). |
+| `README.md`, `README_HE.md`, `docs/` | This guide (English / Hebrew) and its pictures. |
+| `shared_diagrams/` | Created by the server: one JSON file per shared diagram, previous version as `.json.bak`, deleted ones in `_deleted/`. |
 
 ## Shortcuts
 
 | Keys | Action |
 |---|---|
 | Ctrl+Enter | Render now |
-| Ctrl+S | Save (to browser) |
-| Ctrl+Shift+S | Save as… (choose file name) |
+| Ctrl+S / Ctrl+Shift+S | Save / Save as… |
 | Ctrl+O | Library |
-| Mouse wheel | Zoom around the cursor |
-| Left-drag (or middle-drag) | Move the diagram |
-| Double-click | Fit to window |
-| Shift+wheel | Scroll |
-| + / − / 0 / arrows | Zoom / fit / move (click the diagram first) |
+| Mouse wheel · left-drag · double-click | Zoom · move · fit |
 | Tab / Shift+Tab | Indent / outdent |
 
----
+## What's new in 2.3
 
-## בעברית בקצרה
-
-- **פתיחה:** לחיצה כפולה על `FlowChartCreation.html` – עובד ללא אינטרנט.
-- **שמירה:** כל שינוי נשמר אוטומטית בדפדפן, עם ספרייה והיסטוריית גרסאות. „שמירה לקובץ” ו„גיבוי הכל” לשמירה חיצונית.
-- **ייצוא:** PNG ברזולוציה גבוהה, PDF (בגודל התרשים, A4/A3, או A4 בגודל אמיתי מפוצל לעמודים), SVG.
-- **שיתוף ברשת:** הפעילו `start_server.bat`, לחצו „שיתוף” ושלחו את הקישור. הסוקרים רואים עדכונים בזמן אמת.
-- **בדיקה עצמית:** כפתור „בדיקה עצמית” מריץ את כל בדיקות האימות.
+- Loop arrows leave from the bottom and enter from the side, each on its own lane.
+- Hebrew text switches the editor and the diagram to right-to-left (with an Auto / RTL / LTR choice).
+- Edit together: several people type in the same diagram at the same time through the server.
+- About window (ⓘ) with version, creator and contact; `update_checksums` scripts.
+- This step-by-step guide, in English and Hebrew.
 
 ## License
 
-MIT – see `LICENSE`. Bundled third-party libraries: see `THIRD_PARTY_LICENSES.txt`.
+MIT — see `LICENSE`. Bundled libraries: see `THIRD_PARTY_LICENSES.txt`.

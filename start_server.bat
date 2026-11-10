@@ -1,5 +1,5 @@
 @echo off
-REM FlowChartCreation - share diagrams on the local network (Windows)
+REM FlowChartCreation - share and edit diagrams together on the local network (Windows)
 chcp 65001 >nul
 cd /d "%~dp0"
 where py >nul 2>nul
