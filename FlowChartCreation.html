@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark">
 <title>FlowChartCreation</title>
-<!-- FlowChartCreation v2.3.0 — single-file, fully offline build.
+<!-- FlowChartCreation v2.3.1 — single-file, fully offline build.
      Bundled: Mermaid 10.9.3 (MIT), jsPDF 2.5.2 (MIT). No network access needed. -->
 <script>
 /* ========================== ABOUT – EDIT HERE ==========================
@@ -2674,7 +2674,7 @@ const Simple = (() => {
    ===================================================================== */
 const Arrows = (() => {
   const NS = 'http://www.w3.org/2000/svg';
-  const GAP = 16, LANE = 20, STEP = 16, R = 8, TIP = 4;
+  const GAP = 16, LANE = 20, STEP = 16, R = 8, TIP = 4, LGAP = 5;
 
   function flowDir(code) {
     const m = /^\s*(?:flowchart|graph)\s+(TB|TD|BT|LR|RL)\b/im.exec(code || '');
@@ -2756,7 +2756,6 @@ const Arrows = (() => {
     for (const o of ctx.obstacles(L)) if (overlapU(o, ua, ub)) lane = s > 0 ? Math.max(lane, o.v2) : Math.min(lane, o.v1);
     lane += s * LANE;
     for (const l of ctx.lanes) if (l.s === s && l.ub > ua && l.ua < ub) lane = s > 0 ? Math.max(lane, l.v + STEP + l.extra) : Math.min(lane, l.v - STEP - l.extra);
-    lane += s * (L.labelHalf || 0);
     pts.push([startU, lane], [uIn, lane], [uIn, vIn + s * TIP]); // stop just outside the shape; the arrowhead reaches its edge
     // drop duplicate / collinear points
     const out = [];
@@ -2764,8 +2763,9 @@ const Arrows = (() => {
       const q = out[out.length - 1]; if (q && Math.abs(q[0] - p[0]) < 0.01 && Math.abs(q[1] - p[1]) < 0.01) continue;
       out.push(p);
     }
-    ctx.lanes.push({ s, v: lane, ua, ub, extra: L.labelHalf || 0 });
-    return { pts: out, lane, labelAt: [(startU + uIn) / 2, lane], ua, ub, firstV, vIn, uIn };
+    const lw = L.labelHalf ? 2 * L.labelHalf + LGAP : 0;   // the label sits beside the lane, on its outer side
+    ctx.lanes.push({ s, v: lane, ua, ub, extra: lw });
+    return { pts: out, lane, labelAt: [(startU + uIn) / 2, lane + s * (L.labelHalf + LGAP)], ua, ub, firstV, vIn, uIn };
   }
 
   /** How many shapes the horizontal legs would cut through on this side (lower = better). */
@@ -2896,7 +2896,7 @@ const Arrows = (() => {
       // a loop inside a group (swim lane) must stay inside it: widen the group box if needed
       for (const c of clusters) {
         if (!(inside(L.s.fb, c.fb) && inside(L.t.fb, c.fb))) continue;
-        const need = r.lane + L.side * ((L.labelHalf || 0) + 10);
+        const need = r.lane + L.side * ((L.labelHalf ? 2 * L.labelHalf + LGAP : 0) + 10);
         if (L.side > 0 && need > c.fb.v2) grow(c, ax, svg, 0, need - c.fb.v2);
         if (L.side < 0 && need < c.fb.v1) grow(c, ax, svg, c.fb.v1 - need, 0);
       }
@@ -2959,7 +2959,62 @@ const Arrows = (() => {
     return layout(svg, items, { ...opts, edges: fwd });
   }
 
-  return { flowDir, drawLoops, fixBackEdges, wrapText };
+  /** Move every arrow label (Yes / No / …) next to its line instead of on top of it.
+      Vertical-ish line → label to the side (away from the shape the arrow leaves; right, or left in RTL, when straight);
+      horizontal-ish line → label above the line. If that spot is taken by a shape, try the other side; else leave it. */
+  function offsetLabels(svg, opts = {}) {
+    const dir = opts.dir || 'TD', ax = AX[dir] || AX.TD;
+    const { nodes } = collect(svg, ax);
+    const boxes = [...nodes.values()].map(n => n.rb);
+    const paths = [...svg.querySelectorAll('.edgePaths path.flowchart-link')].map(p => {
+      let len = 0; try { len = p.getTotalLength(); } catch {} if (!len) return null;
+      const m = absMatrix(p, svg), n = Math.max(12, Math.min(300, Math.ceil(len / 3))), pts = [];
+      for (let i = 0; i <= n; i++) { const q = p.getPointAtLength(len * i / n); pts.push(apply(m, q.x, q.y)); }
+      const cls = p.getAttribute('class') || '', a = /\bLS-(\S+)/.exec(cls);
+      return { p, pts, from: a ? nodes.get(a[1]) : null, loop: p.classList.contains('fc-loop') };
+    }).filter(Boolean);
+    const hits = (b) => boxes.some(o => b.x1 < o.x2 - 1 && b.x2 > o.x1 + 1 && b.y1 < o.y2 - 1 && b.y2 > o.y1 + 1);
+    const crosses = (b, pts) => pts.some(q => q.x > b.x1 + 0.5 && q.x < b.x2 - 0.5 && q.y > b.y1 + 0.5 && q.y < b.y2 - 0.5);
+    const placed = [];
+    let moved = 0;
+    for (const lab of svg.querySelectorAll('.edgeLabels g.edgeLabel')) {
+      if (!lab.textContent.trim() || lab.classList.contains('fc-loop-label')) continue;
+      const b = rootBox(lab, svg); if (!b) continue;
+      const cx = (b.x1 + b.x2) / 2, cy = (b.y1 + b.y2) / 2, w = b.x2 - b.x1, h = b.y2 - b.y1;
+      let best = null, bd = Infinity;
+      for (const P of paths) for (let i = 0; i < P.pts.length; i++) { const d = Math.hypot(P.pts[i].x - cx, P.pts[i].y - cy); if (d < bd) { bd = d; best = { P, i }; } }
+      if (!best || bd > Math.max(w, h)) continue;
+      const { P, i } = best, a = P.pts[Math.max(0, i - 2)], z = P.pts[Math.min(P.pts.length - 1, i + 2)];
+      const vertical = Math.abs(z.y - a.y) >= Math.abs(z.x - a.x);
+      const cands = [];
+      if (vertical) {
+        const near = P.pts.filter(q => q.y >= b.y1 - 3 && q.y <= b.y2 + 3); const xs = (near.length ? near : [P.pts[i]]).map(q => q.x);
+        const lo = Math.min(...xs), hi = Math.max(...xs);
+        let side = P.from ? Math.sign(P.pts[i].x - (P.from.rb.x1 + P.from.rb.x2) / 2) : 0;
+        if (Math.abs(P.pts[i].x - (P.from ? (P.from.rb.x1 + P.from.rb.x2) / 2 : P.pts[i].x)) < 3) side = 0;
+        if (!side) side = opts.rtl ? -1 : 1;
+        const at = (sd) => sd > 0 ? hi + LGAP + w / 2 : lo - LGAP - w / 2;
+        cands.push([at(side), cy], [at(-side), cy]);
+      } else {
+        const near = P.pts.filter(q => q.x >= b.x1 - 3 && q.x <= b.x2 + 3); const ys = (near.length ? near : [P.pts[i]]).map(q => q.y);
+        cands.push([cx, Math.min(...ys) - LGAP - h / 2], [cx, Math.max(...ys) + LGAP + h / 2]);
+      }
+      for (const [nx, ny] of cands) {
+        const nb = { x1: nx - w / 2, x2: nx + w / 2, y1: ny - h / 2, y2: ny + h / 2 };
+        if (hits(nb) || crosses(nb, P.pts) || placed.some(o => nb.x1 < o.x2 && nb.x2 > o.x1 && nb.y1 < o.y2 && nb.y2 > o.y1)) continue;
+        // the label's parent groups only translate, so a root-space shift is the same shift in its own frame
+        const tl = lab.transform.baseVal, mtx = tl.numberOfItems ? tl.consolidate().matrix : null;
+        const tx = (mtx ? mtx.e : 0) + (nx - cx), ty = (mtx ? mtx.f : 0) + (ny - cy);
+        lab.setAttribute('transform', `translate(${tx.toFixed(2)}, ${ty.toFixed(2)})`);
+        lab.classList.add('fc-beside'); placed.push(nb); moved++;
+        break;
+      }
+    }
+    if (moved) fitViewBox(svg);
+    return moved;
+  }
+
+  return { flowDir, drawLoops, fixBackEdges, offsetLabels, wrapText };
 })();
 
 </script>
@@ -3492,7 +3547,7 @@ window.__fccAppScript = true;
    Sections: config · i18n · utils · storage · validation · editor ·
              render · view · export · files · network · review · UI · tests · app
    ===================================================================== */
-const APP_VERSION = '2.3.0', BUILD_DATE = '2026-11-10', MERMAID_VERSION = '10.9.3', JSPDF_VERSION = '2.5.2';
+const APP_VERSION = '2.3.1', BUILD_DATE = '2026-11-10', MERMAID_VERSION = '10.9.3', JSPDF_VERSION = '2.5.2';
 const LS_PREFIX = 'fcc.v2.';
 const LIMITS = { codeChars: 200000, nameChars: 80, projectBytes: 5e6, maxDim: 16000, maxArea: 120e6, history: 20, snapshotGapMs: 120000 };
 const THEMES = ['dark', 'default', 'forest', 'neutral'];
@@ -4109,6 +4164,7 @@ const Render = {
       if (dir && svgEl.getAttribute('aria-roledescription') === 'flowchart-v2') {
         if (o.loops) Arrows.drawLoops(svgEl, o.loops, { dir, rtl: !!o.rtl, edges: (o.edges || []).filter(e => !o.loops.some(l => l.from === e.from && l.to === e.to)) });
         else Arrows.fixBackEdges(svgEl, { dir, rtl: !!o.rtl });
+        Arrows.offsetLabels(svgEl, { dir, rtl: !!o.rtl }); // Yes / No labels beside their arrow, not on top of it
       }
     } catch (e) { console.warn('arrow routing skipped:', e); }
     const walker = document.createTreeWalker(svgEl, NodeFilter.SHOW_TEXT);
@@ -4766,7 +4822,7 @@ const Live = {
   async copyLink() { const ok = await Util.copyText(this.linkFor(this.id)); UI.toast(ok ? t('copied') : t('copyFail'), ok ? 'ok' : 'err'); },
   leave(silent) {
     if (!this.on) return;
-    try { if (this.cid) navigator.sendBeacon('/api/live/' + encodeURIComponent(this.id) + '/leave', JSON.stringify({ cid: this.cid })); } catch {}
+    try { if (this.cid) navigator.sendBeacon('/api/live/' + encodeURIComponent(this.id) + '/leave', new Blob([JSON.stringify({ cid: this.cid })], { type: 'application/json' })); } catch {}
     if (!silent) { App.saveNow(true); this.stop(); location.href = location.pathname; }
   },
   stop() { this.on = false; this.stopped = true; this.cid = null; document.body.classList.remove('live'); $('bannerLive').classList.add('hidden'); }
@@ -4912,10 +4968,12 @@ const UI = {
     if (!S.server) { body.innerHTML = tabs + `<p class="note">${t('netNone')}<br><br>${t('netHow')}</p>`; return; }
     body.innerHTML = tabs + `<p class="note">${t('rendering')}</p>`;
     try {
-      const list = (await Net.list()).items || [];
+      // shared files can be edited by hand on the server: keep only well-formed entries and escape everything
+      const list = ((await Net.list()).items || []).filter(d => d && typeof d.id === 'string' && ID_RE.test(d.id))
+        .map(d => ({ ...d, rev: Number.isFinite(+d.rev) ? +d.rev : 0, updated: Number.isFinite(+d.updated) ? +d.updated : 0, editors: Number.isFinite(+d.editors) ? +d.editors : 0 }));
       if (this.libTab !== 'net' || !$('libBody')) return;
       body.innerHTML = tabs + `<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn sm" onclick="UI.renderLibrary()"><svg class="i"><use href="#i-refresh"/></svg></button></div><div class="list">` +
-        (list.length ? list.map(d => `<div class="row"><div class="nm"><b>${Util.esc(d.name)}</b><span>${Util.esc(t('by', { a: d.author || '?' }))} · ${t('rev', { r: d.rev })} · ${Util.fmtTime(d.updated * 1000)}</span></div>
+        (list.length ? list.map(d => `<div class="row"><div class="nm"><b>${Util.esc(d.name)}</b><span>${Util.esc(t('by', { a: d.author || '?' }))} · ${Util.esc(t('rev', { r: d.rev }))} · ${Util.esc(Util.fmtTime(d.updated * 1000))}</span></div>
           <div class="acts"><a class="btn sm" href="?view=${encodeURIComponent(d.id)}" target="_blank" rel="noopener"><svg class="i"><use href="#i-eye"/></svg>${t('view')}</a>
           <button class="btn sm" onclick="App.importShared('${d.id}')">${t('importToLib')}</button>
           ${S.server.read_only ? '' : `<button class="btn sm" onclick="location.href='?live=${d.id}'"><svg class="i"><use href="#i-users"/></svg>${t('liveLib')}${d.editors ? ` (${d.editors})` : ''}</button>`}
@@ -5258,6 +5316,19 @@ const Tests = {
       const mm = await this.renderInto('flowchart TD\n A[Start] --> B{OK?}\n B -->|No| C[Fix]\n C --> B\n B -->|Yes| D[End]');
       if (!mm.querySelector('path.fc-loop')) throw new Error('Mermaid-mode back edge not re-routed');
       return '2 loops on separate lanes + Mermaid mode';
+    });
+    add('Arrow labels sit beside their line, not on it', async () => {
+      const comp = Simple.compile('Start\nOK?\n  Yes: Alpha\n  No: Beta\nend: Done\nAgain?\n  Yes: → Start\n  No:', { dir: 'TD' });
+      const el = await this.renderInto(comp.code, 'default', comp);
+      const labels = [...el.querySelectorAll('.edgeLabels g.edgeLabel')].filter(l => l.textContent.trim());
+      if (labels.length < 3) throw new Error('labels found: ' + labels.length);
+      const abs = (e) => { let m = el.createSVGMatrix(); for (let x = e; x && x !== el; x = x.parentNode) { const tl = x.transform && x.transform.baseVal; if (tl && tl.numberOfItems) m = tl.consolidate().matrix.multiply(m); } return m; };
+      const pts = [...el.querySelectorAll('.edgePaths path')].flatMap(p => { const m = abs(p), L = p.getTotalLength(), out = []; for (let i = 0; i <= 80; i++) { const q = p.getPointAtLength(L * i / 80); out.push({ x: m.a * q.x + m.c * q.y + m.e, y: m.b * q.x + m.d * q.y + m.f }); } return out; });
+      let onLine = 0;
+      for (const l of labels) { const b = l.getBBox(), m = abs(l), x1 = m.e + b.x, y1 = m.f + b.y, x2 = x1 + b.width, y2 = y1 + b.height;
+        if (pts.some(q => q.x > x1 + 1 && q.x < x2 - 1 && q.y > y1 + 1 && q.y < y2 - 1)) onLine++; }
+      if (onLine) throw new Error(onLine + ' label(s) still on top of a line');
+      return labels.length + ' labels clear of the lines';
     });
     add('Hebrew text → right-to-left editor and diagram', async () => {
       if (Simple.hebrewRatio('קבלת הזמנה\nיש במלאי?') < 0.9 || Simple.hebrewRatio('Receive order') > 0) throw new Error('language detection');

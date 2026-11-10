@@ -1,4 +1,4 @@
-# FlowChartCreation 2.3
+# FlowChartCreation 2.3.1
 
 Workflow diagrams from plain text, in **Hebrew and English**. You write the process one step per line, and the diagram draws itself. Everything — the diagram engine (Mermaid 10.9.3) and the PDF library (jsPDF 2.5.2) — is inside **one HTML file**: no installation and no internet needed.
 
@@ -76,11 +76,14 @@ The **ⓘ** button (top right) opens *About*: description, version, creator and 
 | "Port 8765 is busy – using 8766" | Another program uses the port. Fine — use the new address shown. Or start with `py server.py --port 9000`. |
 | Colleagues can't open the link | Allow Python in Windows Firewall for **Private** networks (Control Panel → Windows Defender Firewall → *Allow an app*). Make sure you're on the same network and the black window is still open. |
 | The link stopped working the next day | The host's network address can change. Look at the address in the black window and send the new link. |
+| "unknown host name" | Open the app with the address shown in the server window (an IP address like `http://192.168.1.20:8765`). To use a name instead (e.g. a DNS name or a VPN name), start the server with `py server.py --allow-host thatname`. |
 | "Sharing needs the local server" | You opened the file directly. Open the `http://…` address that the server window shows. |
 | A reviewer sees an old version | Click **Share** again — review links update within 4 seconds. |
 | My diagrams disappeared | You're probably in the other library (file vs. server address, or another browser). Open the other one, or restore a *Backup all* file. |
 
-Server options: `--port 9000` · `--read-only` (view only, no editing or publishing) · `--host 127.0.0.1` (this computer only) · `--data <folder>`.
+Server options: `--port 9000` · `--read-only` (view only, no editing or publishing) · `--host 127.0.0.1` (this computer only) · `--data <folder>` · `--allow-host <name>` (an extra name for this computer in links).
+
+**Built-in protection:** the server only accepts changes that come from the app's own pages, so other websites you visit can't add, change or delete shared diagrams; it only answers to IP addresses and this computer's own names (blocks "DNS rebinding" tricks); it can't be shown inside another site's frame; and it limits how many diagrams and connections it holds (1,000 shared diagrams, 200 live sessions), so it can't be flooded. There is still **no login** – anyone on your network who has the address can view and edit shared diagrams.
 
 ---
 
@@ -141,6 +144,11 @@ end: Order completed
 | Ctrl+O | Library |
 | Mouse wheel · left-drag · double-click | Zoom · move · fit |
 | Tab / Shift+Tab | Indent / outdent |
+
+## What's new in 2.3.1
+
+- Arrow labels (Yes / No / …) are placed beside their line instead of on top of it.
+- Security: changes from other websites are refused, unknown host names are refused (DNS rebinding), anti-framing headers, limits against flooding, and stricter checks on shared files.
 
 ## What's new in 2.3
 

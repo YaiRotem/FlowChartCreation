@@ -19,6 +19,7 @@ editors end up with exactly the same text. Edits are saved to ./shared_diagrams 
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import json
 import os
 import re
@@ -35,7 +36,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
 APP = "FlowChartCreation"
-VERSION = "2.3.0"
+VERSION = "2.3.1"
 HERE = Path(__file__).resolve().parent
 HTML_FILE = HERE / "FlowChartCreation.html"
 ID_RE = re.compile(r"^[a-z0-9-]{1,64}$")
@@ -53,6 +54,7 @@ class Config:
     data_dir: Path
     read_only: bool
     lan_urls: list[str]
+    allowed_hosts: set[str]
 
 
 CFG: Config
@@ -63,6 +65,11 @@ LIVE_CLIENT_TIMEOUT = 45      # seconds without polling → editor removed from 
 LIVE_POLL_WAIT = 25           # long-poll duration (seconds)
 LIVE_SAVE_DELAY = 1.5         # seconds of quiet before a live document is written to disk
 LIVE_MAX_CLIENTS = 50
+LIVE_MAX_DOCS = 200           # live sessions kept in memory at once
+LIVE_MAX_POLLS = 300          # simultaneous waiting connections (protects the server from being flooded)
+MAX_SHARED = 1000             # shared diagram files in the data folder
+POLLS = 0
+POLLS_LOCK = threading.Lock()
 PALETTE = ["#f97316", "#22c55e", "#3b82f6", "#e879f9", "#eab308", "#14b8a6", "#f43f5e", "#a78bfa", "#84cc16", "#06b6d4"]
 
 
@@ -284,12 +291,28 @@ def live_get(doc_id: str, init: dict | None = None) -> LiveDoc | None:
                     "theme": d.get("theme") if d.get("theme") in THEMES else "dark", "bg": d.get("bg") if d.get("bg") in BGS else "dark"}
             ld = LiveDoc(doc_id, text, meta, d.get("code") or "")
         elif init:
+            if shared_count() >= MAX_SHARED:
+                raise LimitError(f"the server already holds {MAX_SHARED} shared diagrams – delete some first")
             ld = LiveDoc(doc_id, init["text"], init["meta"], init["code"])
             ld.dirty = True
         else:
             return None
+        if len(LIVE) >= LIVE_MAX_DOCS:   # drop idle, saved sessions from memory (they reload from disk when needed)
+            for k, v in list(LIVE.items()):
+                if not v.clients and not v.dirty:
+                    del LIVE[k]
+            if len(LIVE) >= LIVE_MAX_DOCS:
+                raise LimitError("too many live sessions at once – try again later")
         LIVE[doc_id] = ld
         return ld
+
+
+class LimitError(Exception):
+    pass
+
+
+def shared_count() -> int:
+    return sum(1 for _ in CFG.data_dir.glob("*.json"))
 
 
 def clean_meta(m: object, base: dict | None = None) -> dict:
@@ -389,6 +412,10 @@ def write_doc_atomic(doc_id: str, doc: dict) -> None:
 
 def meta(doc: dict) -> dict:
     m = {k: doc.get(k) for k in ("id", "name", "author", "rev", "updated", "theme", "bg", "mode")}
+    m["rev"] = m["rev"] if isinstance(m["rev"], int) else 0            # files may have been edited by hand
+    m["updated"] = m["updated"] if isinstance(m["updated"], (int, float)) else 0
+    for k in ("name", "author"):
+        m[k] = m[k] if isinstance(m[k], str) else ""
     ld = LIVE.get(doc.get("id") or "")
     m["editors"] = len(ld.clients) if ld else 0
     return m
@@ -434,6 +461,7 @@ def validate_body(body: object) -> tuple[dict | None, str | None]:
 # ----------------------------------------------------------------- HTTP
 class Handler(BaseHTTPRequestHandler):
     server_version = f"{APP}/{VERSION}"
+    timeout = 60   # drop connections that stall (slow or half-open clients)
 
     # -- helpers
     def _send(self, status: int, payload: object | bytes, ctype: str = "application/json; charset=utf-8") -> None:
@@ -444,6 +472,10 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("X-Frame-Options", "DENY")   # no hidden frames (clickjacking)
+        self.send_header("Content-Security-Policy", "frame-ancestors 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; connect-src 'self'")
+        self.send_header("Cross-Origin-Opener-Policy", "same-origin")
+        self.send_header("Cross-Origin-Resource-Policy", "same-origin")
         self.end_headers()
         if self.command != "HEAD":
             self.wfile.write(data)
@@ -457,6 +489,43 @@ class Handler(BaseHTTPRequestHandler):
             raise ValueError("empty or too large body")
         return json.loads(self.rfile.read(length).decode("utf-8"))
 
+    # -- protection against other websites (CSRF) and DNS rebinding
+    def _host_ok(self) -> bool:
+        """The Host header must be an IP address or a known name of this computer. A web page that tricks the
+        browser with a look-alike domain (DNS rebinding) sends its own domain name here and is refused."""
+        host = (self.headers.get("Host") or "").strip().lower()
+        if not host:
+            return False
+        name = host[1:host.index("]")] if host.startswith("[") and "]" in host else host.rsplit(":", 1)[0] if host.count(":") == 1 else host
+        try:
+            ipaddress.ip_address(name)
+            return True
+        except ValueError:
+            return name in CFG.allowed_hosts
+
+    def _guard(self, write: bool) -> bool:
+        if not self._host_ok():
+            self._err(421, "unknown host name – open the app with the address that the server window shows "
+                           "(or start the server with --allow-host <name>)")
+            return False
+        if write:
+            host = (self.headers.get("Host") or "").strip().lower()
+            origin = self.headers.get("Origin")
+            if origin is not None:
+                o = urlparse(origin.strip().lower())
+                if origin.strip().lower() == "null" or o.netloc != host:
+                    self._err(403, "request from another website refused")
+                    return False
+            elif (self.headers.get("Sec-Fetch-Site") or "same-origin") not in ("same-origin", "none"):
+                self._err(403, "request from another website refused")
+                return False
+            if self.command in ("POST", "PUT"):
+                ctype = (self.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+                if ctype != "application/json":
+                    self._err(415, "Content-Type must be application/json")
+                    return False
+        return True
+
     def _doc_id(self, path: str) -> str | None:
         doc_id = unquote(path[len("/api/diagrams/"):])
         return doc_id if ID_RE.match(doc_id) else None
@@ -469,6 +538,8 @@ class Handler(BaseHTTPRequestHandler):
         self.do_GET()
 
     def do_GET(self) -> None:
+        if not self._guard(False):
+            return
         path = urlparse(self.path).path
         if path in ("/", "/index.html", "/FlowChartCreation.html"):
             try:
@@ -483,8 +554,10 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/diagrams":
             items = []
             for p in CFG.data_dir.glob("*.json"):
+                if not ID_RE.match(p.stem):
+                    continue
                 d = read_doc(p.stem)
-                if d:
+                if d and d.get("id") == p.stem:
                     items.append(meta(d))
             items.sort(key=lambda d: d.get("updated") or 0, reverse=True)
             return self._send(200, {"items": items})
@@ -501,6 +574,18 @@ class Handler(BaseHTTPRequestHandler):
 
     # -- live editing
     def _live_poll(self, doc_id: str) -> None:
+        global POLLS
+        with POLLS_LOCK:
+            if POLLS >= LIVE_MAX_POLLS:
+                return self._err(503, "server busy – retrying")
+            POLLS += 1
+        try:
+            self._live_poll_inner(doc_id)
+        finally:
+            with POLLS_LOCK:
+                POLLS -= 1
+
+    def _live_poll_inner(self, doc_id: str) -> None:
         q = parse_qs(urlparse(self.path).query)
         def qint(k: str) -> int:
             try:
@@ -535,6 +620,8 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, res)
 
     def do_POST(self) -> None:
+        if not self._guard(True):
+            return
         path = urlparse(self.path).path
         m = re.match(r"^/api/live/([a-z0-9-]{1,64})/(join|op|sel|meta|code|leave)$", path)
         if not m:
@@ -613,7 +700,10 @@ class Handler(BaseHTTPRequestHandler):
             text, code = it.get("text"), it.get("code")
             if isinstance(text, str) and len(text) <= MAX_CODE:
                 init = {"text": text, "meta": clean_meta(it.get("meta")), "code": code if isinstance(code, str) and len(code) <= MAX_CODE else ""}
-        ld = live_get(doc_id, init)
+        try:
+            ld = live_get(doc_id, init)
+        except LimitError as e:
+            return self._err(507, str(e))
         if not ld:
             return self._err(404, "diagram not found – share it first")
         with ld.cond:
@@ -634,6 +724,8 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, res)
 
     def do_PUT(self) -> None:
+        if not self._guard(True):
+            return
         path = urlparse(self.path).path
         if not path.startswith("/api/diagrams/"):
             return self._err(404, "not found")
@@ -651,6 +743,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._err(422, err)
         with LOCK:
             current = read_doc(doc_id)
+            if not current and shared_count() >= MAX_SHARED:
+                return self._err(507, f"the server already holds {MAX_SHARED} shared diagrams – delete some first")
             if current and not clean["force"] and clean["base_rev"] != current.get("rev"):
                 return self._err(409, "conflict: diagram changed since your last publish", current=meta(current))
             now = time.time()
@@ -675,6 +769,8 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, meta(doc))
 
     def do_DELETE(self) -> None:
+        if not self._guard(True):
+            return
         path = urlparse(self.path).path
         if not path.startswith("/api/diagrams/"):
             return self._err(404, "not found")
@@ -737,6 +833,8 @@ def main() -> int:
     ap.add_argument("--data", default=str(HERE / "shared_diagrams"), help="folder for shared diagrams")
     ap.add_argument("--read-only", action="store_true", help="disable publishing and deleting")
     ap.add_argument("--open", action="store_true", help="open the app in the default browser")
+    ap.add_argument("--allow-host", action="append", default=[], metavar="NAME",
+                    help="extra host name people may use in the address, e.g. a DNS name for this PC (IP addresses always work)")
     a = ap.parse_args()
 
     # startup verification checks
@@ -757,7 +855,14 @@ def main() -> int:
         print(f"Port {a.port} is busy – using {port} instead.")
 
     ips = lan_addresses() if a.host in ("0.0.0.0", "") else ([a.host] if a.host != "127.0.0.1" else [])
-    CFG = Config(data_dir=data_dir, read_only=a.read_only, lan_urls=[f"http://{ip}:{port}" for ip in ips])
+    names = {"localhost"}
+    try:
+        hn = socket.gethostname().lower()
+        names |= {hn, hn + ".local", socket.getfqdn().lower()}
+    except OSError:
+        pass
+    names |= {h.strip().lower() for h in a.allow_host if h.strip()}
+    CFG = Config(data_dir=data_dir, read_only=a.read_only, lan_urls=[f"http://{ip}:{port}" for ip in ips], allowed_hosts=names)
     srv = ThreadingHTTPServer((a.host, port), Handler)
     srv.daemon_threads = True
 
