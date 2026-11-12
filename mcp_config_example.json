@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "flowchartcreation": {
+      "command": "py",
+      "args": [
+        "-3",
+        "C:\\FlowChartCreation\\fcc_mcp.py",
+        "--server", "http://127.0.0.1:8765",
+        "--key-file", "C:\\FlowChartCreation\\planner.key"
+      ]
+    }
+  }
+}
