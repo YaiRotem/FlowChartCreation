@@ -213,7 +213,7 @@ Wait for supplier
 - **Saving:** autosave with read-back verification, Library (Ctrl+O), History (20 snapshots per diagram), *Save as…* `.flowchart` files with your own file name, *Backup all*.
 - **Export without losing data:** real text in the diagram, PNG 2×/3×/4×, PDF (exact size, A4/A3, or A4 real size over several pages), SVG, `.mmd`.
 - **Mouse:** wheel zooms around the pointer, left-drag moves, double-click fits (on a ⊕ block: opens the sub-flow).
-- **Self-test** (header): checks the compiler, sub-flows, arrow routing, right-to-left layout, rendering, exports, storage, and — through the server — sharing, live editing and history.
+- **Self-test** (header): checks the compiler, sub-flows, branches, block colours, arrow routing, right-to-left layout, rendering, exports, storage, and — through the server — sharing, live editing and history.
 
 ## Files
 

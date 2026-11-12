@@ -98,6 +98,8 @@ Hebrew works the same (`כן:`, `לא:`, `חזור ל…`, `סוף:`, `נתונ�
 
 **Sub-flows:** a sub-flow may not use itself (directly or through others) and can go up to 20 levels deep; the server refuses anything else and explains why. Agents may change local sub-flows (sections) in diagrams they may change. A **shared** sub-flow is a diagram of its own, so changing it needs permission on that diagram – and the change reaches every diagram that uses it (people see an *Accept / Keep the previous version* bar). `get_workflow` lists the shared sub-flows a diagram uses (`sub_flows_used`).
 
+**Block colours:** colours are chosen by people in the app (🎨). Agents can't set them; an agent's change keeps the colours the diagram already has.
+
 Good workflows: one action per step starting with a verb; yes/no questions ending with `?`, each with at least two answers; loops with `→ <exact step text>` instead of repeated steps; short, unique step texts; groups (`# Department`) when several departments are involved.
 
 Working method: `check_workflow` and fix every problem → `create_workflow` with a clear reason → to change: `get_workflow` → edit the full text → `update_workflow` with `base_rev` and a reason.
